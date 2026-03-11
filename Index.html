@@ -1,0 +1,2665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VirtuShelf</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 2026 PREMIUM LIQUID GLASS UI VARIABLES --- */
+        :root {
+            /* Aesthetic Light Mode */
+            --bg-body: #F4F6F9;
+            --ambient-1: rgba(139, 92, 246, 0.15); 
+            --ambient-2: rgba(244, 63, 94, 0.12);  
+            --ambient-3: rgba(14, 165, 233, 0.15); 
+            
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.8);
+            --glass-border-light: rgba(255, 255, 255, 1);
+            --glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.04);
+            --glass-highlight: inset 0 1px 1px rgba(255, 255, 255, 0.9), inset 0 -1px 2px rgba(255, 255, 255, 0.3);
+            
+            --bg-surface: rgba(255, 255, 255, 0.85);
+            --bg-surface-hover: rgba(255, 255, 255, 1);
+            
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            
+            --neon-pink: #F43F5E;
+            --neon-purple: #8B5CF6;
+            --accent-gradient: linear-gradient(135deg, #8B5CF6 0%, #F43F5E 100%);
+            --accent-glow: rgba(139, 92, 246, 0.25);
+            
+            --success-color: #10B981;
+            --success-glow: rgba(16, 185, 129, 0.25);
+
+            --paper-bg: #FCFCFA;
+            --paper-text: #1E293B;
+            --spine-shadow-left: inset -12px 0 20px -5px rgba(0,0,0,0.04), inset 1px 0 2px rgba(255,255,255,1);
+            --spine-shadow-right: inset 12px 0 20px -5px rgba(0,0,0,0.04), inset -1px 0 2px rgba(255,255,255,1);
+
+            --font-ui: 'Inter', system-ui, sans-serif;
+            --font-serif: 'Merriweather', serif;
+        }
+
+        body.dark-theme {
+            /* Deep Midnight Dark Mode */
+            --bg-body: #05070D;
+            --ambient-1: rgba(139, 92, 246, 0.18);
+            --ambient-2: rgba(244, 63, 94, 0.15);
+            --ambient-3: rgba(14, 165, 233, 0.12);
+            
+            --glass-bg: rgba(15, 23, 42, 0.55);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border-light: rgba(255, 255, 255, 0.12);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            --glass-highlight: inset 0 1px 1px rgba(255, 255, 255, 0.1), inset 0 -1px 2px rgba(0, 0, 0, 0.5);
+            
+            --bg-surface: rgba(30, 41, 59, 0.7);
+            --bg-surface-hover: rgba(51, 65, 85, 0.9);
+            
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            
+            --neon-pink: #FB7185;
+            --neon-purple: #A78BFA;
+            --accent-gradient: linear-gradient(135deg, #A78BFA 0%, #FB7185 100%);
+            --accent-glow: rgba(167, 139, 250, 0.3);
+            
+            --paper-bg: #111827;
+            --paper-text: #E2E8F0;
+            --spine-shadow-left: inset -12px 0 20px -5px rgba(0,0,0,0.8), inset 1px 0 2px rgba(255,255,255,0.05);
+            --spine-shadow-right: inset 12px 0 20px -5px rgba(0,0,0,0.8), inset -1px 0 2px rgba(255,255,255,0.05);
+        }
+
+        * { box-sizing: border-box; }
+        
+        body {
+            margin: 0;
+            font-family: var(--font-ui);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 14px; 
+            transition: background-color 0.4s ease, color 0.4s ease;
+            
+            background-image: 
+                radial-gradient(circle at 10% 20%, var(--ambient-1), transparent 50%),
+                radial-gradient(circle at 90% 80%, var(--ambient-2), transparent 50%),
+                radial-gradient(circle at 50% 50%, var(--ambient-3), transparent 60%);
+            background-size: 120% 120%;
+            background-attachment: fixed;
+        }
+
+        /* --- UNIFIED SCROLLBAR OPTIMIZATION --- */
+        *::-webkit-scrollbar { width: 5px; height: 5px; }
+        *::-webkit-scrollbar-track { background: transparent; margin: 4px; }
+        *::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 10px; }
+        *::-webkit-scrollbar-thumb:hover { background: var(--neon-purple); }
+        body.dark-theme *::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); }
+        body.dark-theme *::-webkit-scrollbar-thumb:hover { background: var(--neon-purple); }
+
+        .sidebar::-webkit-scrollbar { display: none; }
+        .sidebar { -ms-overflow-style: none; scrollbar-width: none; overflow-y: auto; }
+
+        /* --- HEADER --- */
+        header {
+            position: relative;
+            z-index: 100;
+            padding: 0.8rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between; 
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.02);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            transform: translateZ(0); 
+        }
+
+        .brand-container h1 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-family: var(--font-ui);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: var(--accent-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-controls { display: flex; align-items: center; gap: 10px; }
+
+        .icon-btn {
+            background: var(--bg-surface);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04), var(--glass-highlight);
+            color: var(--text-main);
+            cursor: pointer;
+            border-radius: 50% !important; 
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+            aspect-ratio: 1/1;
+            padding: 0;
+            position: relative; 
+            transform: translateZ(0);
+        }
+
+        body.dark-theme .icon-btn { box-shadow: 0 2px 8px rgba(0,0,0,0.2), var(--glass-highlight); }
+
+        .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; transition: stroke 0.3s ease; }
+
+        .icon-btn:hover { 
+            background: var(--bg-surface-hover);
+            border-color: var(--neon-purple);
+            color: var(--neon-purple);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+        
+        #settings-btn:hover { transform: rotate(180deg); }
+
+        @keyframes badgePop {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -3px; right: -3px;
+            background: var(--bg-body); 
+            color: var(--neon-pink);
+            font-size: 0.6rem; font-weight: 800;
+            width: 18px; height: 18px; 
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            border: 1.5px solid var(--neon-pink);
+            box-shadow: 0 2px 6px var(--accent-glow);
+            pointer-events: none; 
+            animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            backdrop-filter: blur(4px);
+        }
+
+        /* --- LAYOUT --- */
+        .library-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            padding: 1.2rem 1.5rem;
+            gap: 1.5rem;
+            max-width: 1500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 200px;
+            border-radius: 14px;
+            padding: 1.2rem 0.8rem;
+            display: flex; flex-direction: column; gap: 0.4rem;
+            overflow-y: auto;
+            height: fit-content;
+            max-height: calc(100vh - 100px);
+            flex-shrink: 0;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px) saturate(150%);
+            -webkit-backdrop-filter: blur(16px) saturate(150%);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            transform: translateZ(0);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .sidebar-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-bottom: 0.2rem;
+            padding-left: 0.6rem;
+            margin-top: 0.8rem;
+        }
+        .sidebar-title:first-child { margin-top: 0; }
+        
+        .sidebar-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+            margin: 0.4rem 0;
+            width: 100%;
+            flex-shrink: 0;
+            transition: background 0.3s ease;
+        }
+
+        .category-btn {
+            text-align: left;
+            padding: 0.6rem 0.8rem;
+            margin-bottom: 0.2rem;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font-ui);
+            transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+            display: flex; align-items: center;
+            position: relative;
+        }
+
+        .category-btn:hover { 
+            color: var(--text-main);
+            background: var(--ambient-1);
+            transform: translateX(3px);
+        }
+
+        .category-btn.active {
+            background: var(--bg-surface);
+            color: var(--neon-purple);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            border: 1px solid var(--glass-border);
+            font-weight: 700;
+        }
+        
+        .category-btn.active::before {
+            content: ''; position: absolute; left: -1px; top: 20%; height: 60%; width: 3px;
+            background: var(--accent-gradient); border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 8px var(--neon-purple);
+        }
+
+        /* --- MAIN CONTENT AREA --- */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            display: flex; flex-direction: column;
+            padding-bottom: 2rem;
+            padding-right: 0.5rem; 
+            transform: translateZ(0);
+        }
+
+        /* --- HERO BANNER --- */
+        @keyframes gentleFloat {
+            0%, 100% { transform: translateY(0); box-shadow: var(--glass-shadow); }
+            50% { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
+        }
+
+        .section-header {
+            border-radius: 20px;
+            padding: 2rem 2rem; 
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 0.8rem; 
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            animation: gentleFloat 8s ease-in-out infinite;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .section-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 5px;
+            background: var(--accent-gradient);
+        }
+
+        .section-title {
+            margin: 0;
+            font-size: 2.4rem; 
+            font-family: var(--font-ui); 
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -1px;
+        }
+
+        .section-subtitle {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        /* --- SEARCH BAR --- */
+        .search-container { 
+            width: 100%; 
+            max-width: 650px; 
+            position: relative; 
+            margin-top: 1rem;
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .search-container:focus-within {
+            transform: translateY(-3px);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            color: var(--text-muted);
+            z-index: 10;
+            pointer-events: none;
+            transition: color 0.3s ease;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 1.4rem 50px 1.4rem 3.5rem; 
+            font-family: var(--font-ui);
+            font-size: 1.1rem;
+            background: var(--bg-surface);
+            color: var(--text-main);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px; 
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.06), inset 0 2px 4px rgba(255,255,255,0.4);
+        }
+        
+        body.dark-theme #search-input { box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.05); }
+
+        #search-input::placeholder { color: var(--text-muted); opacity: 0.8;}
+        
+        #search-input:focus {
+            outline: none;
+            background: var(--bg-surface-hover);
+            border-color: var(--neon-purple);
+            box-shadow: 0 12px 40px var(--accent-glow), 0 0 0 3px var(--neon-purple);
+        }
+        
+        #search-input:focus + .search-icon, 
+        .search-container:focus-within .search-icon {
+            color: var(--neon-purple);
+        }
+
+        .search-actions {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+        }
+
+        .clear-icon-btn {
+            display: none; 
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease, color 0.3s ease, background-color 0.3s ease;
+            padding: 0;
+        }
+        
+        .clear-icon-btn:hover {
+            color: var(--neon-pink);
+            transform: rotate(90deg) scale(1.1); 
+            background: rgba(244, 63, 94, 0.1);
+        }
+
+        /* --- BOOK CARDS --- */
+        .bookshelf {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.5rem;
+            flex-grow: 1; 
+        }
+
+        .book-card {
+            border-radius: 14px; 
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            opacity: 0;
+            transform: translateY(15px); 
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease, opacity 0.5s ease;
+            background: var(--bg-surface);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            will-change: opacity, transform;
+        }
+
+        .book-card.visible { opacity: 1; transform: translateY(0) translateZ(0); }
+
+        .book-card:hover { 
+            transform: translateY(-6px) translateZ(0); 
+            box-shadow: 0 15px 30px var(--glass-shadow), 0 0 15px var(--accent-glow);
+            border-color: var(--neon-purple);
+        }
+
+        .book-cover-container {
+            aspect-ratio: 2 / 3;
+            width: 100%; height: auto;
+            position: relative;
+            overflow: hidden;
+            background: var(--border-light);
+            cursor: pointer;
+            border-radius: 14px 14px 0 0;
+        }
+
+        .book-cover {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease, filter 0.4s ease;
+            will-change: transform;
+        }
+        
+        .book-card:hover .book-cover { 
+            transform: scale(1.05) translateZ(0); 
+            filter: brightness(0.85) contrast(1.05); 
+        }
+
+        .heart-btn, .wishlist-icon-btn {
+            position: absolute;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1), var(--glass-highlight);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+            color: var(--text-main);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transform: translateZ(0);
+        }
+        
+        .heart-btn { top: 8px; right: 8px; }
+        .wishlist-icon-btn { top: 46px; right: 8px; }
+        
+        body.dark-theme .heart-btn, body.dark-theme .wishlist-icon-btn { box-shadow: 0 2px 8px rgba(0,0,0,0.5), var(--glass-highlight); }
+
+        .heart-btn:hover { transform: scale(1.1) translateZ(0); color: var(--neon-pink); border-color: var(--neon-pink); background: var(--bg-surface-hover); }
+        .wishlist-icon-btn:hover { transform: scale(1.1) translateZ(0); color: var(--neon-purple); border-color: var(--neon-purple); background: var(--bg-surface-hover); }
+        
+        /* FIXED: Added specific fill styling for Wishlist Icon interaction */
+        .heart-icon, .wishlist-icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; transition: fill 0.3s ease, stroke 0.3s ease; }
+        
+        .heart-btn.active { color: var(--neon-pink); border-color: var(--neon-pink); background: var(--bg-surface-hover); }
+        .heart-btn.active .heart-icon { fill: var(--neon-pink); animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        .wishlist-icon-btn.active { color: var(--neon-purple); border-color: var(--neon-purple); background: var(--bg-surface-hover); }
+        .wishlist-icon-btn.active .wishlist-icon { fill: var(--neon-purple); animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        .cover-hover-overlay {
+            position: absolute;
+            bottom: -50px; left: 0; right: 0;
+            background: linear-gradient(to top, rgba(139, 92, 246, 0.95), rgba(139, 92, 246, 0.6));
+            color: white; text-align: center;
+            padding: 10px; font-size: 0.8rem; font-weight: 800; letter-spacing: 1px;
+            z-index: 5; transition: bottom 0.3s ease;
+            backdrop-filter: blur(4px);
+            border-top: 1px solid rgba(255,255,255,0.3);
+        }
+        .book-cover-container:hover .cover-hover-overlay { bottom: 0; }
+
+        /* --- STACKED BADGES --- */
+        .badge {
+            position: absolute;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-weight: 800; font-size: 0.6rem;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1), var(--glass-highlight);
+            z-index: 3;
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            transform: translateZ(0);
+        }
+        body.dark-theme .badge { box-shadow: 0 2px 10px rgba(0,0,0,0.4), var(--glass-highlight); }
+        
+        .badge-category { top: 8px; left: 8px; background: var(--glass-bg); color: var(--text-main); }
+        .badge-purchased { top: 38px; left: 8px; background: linear-gradient(135deg, #10B981, #059669); color: #FFF; border-color: rgba(255,255,255,0.4); }
+        .badge-rented { top: 38px; left: 8px; background: linear-gradient(135deg, #F59E0B, #D97706); color: #FFF; border-color: rgba(255,255,255,0.4); }
+        .badge-coming { top: 38px; left: 8px; background: linear-gradient(135deg, #3B82F6, #1D4ED8); color: #FFF; border-color: rgba(255,255,255,0.4); }
+        .badge-soldout { top: 38px; left: 8px; background: linear-gradient(135deg, #64748B, #334155); color: #FFF; border-color: rgba(255,255,255,0.4); }
+
+        .book-info {
+            padding: 1rem;
+            display: flex; flex-direction: column; flex-grow: 1;
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.02));
+        }
+
+        .book-title {
+            font-family: var(--font-serif); 
+            font-weight: 800; font-size: 0.95rem;
+            margin: 0 0 0.2rem 0; color: var(--text-main);
+            line-height: 1.3;
+            display: -webkit-box; 
+            line-clamp: 2;
+            -webkit-line-clamp: 2; 
+            -webkit-box-orient: vertical; 
+            overflow: hidden;
+            transition: color 0.3s ease;
+        }
+
+        .book-author { color: var(--text-muted); font-size: 0.75rem; margin: 0 0 1rem 0; font-weight: 500; transition: color 0.3s ease; }
+
+        .btn-group { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; margin-top: auto; }
+
+        .read-btn, .page-btn {
+            border: none; border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+            font-weight: 700; font-size: 0.8rem; font-family: var(--font-ui);
+            cursor: pointer; 
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+            width: 100%; text-align: center;
+            transform: translateZ(0);
+        }
+
+        .action-buy {
+            background: var(--accent-gradient); color: #FFF;
+            box-shadow: 0 2px 10px var(--accent-glow), inset 0 2px 4px rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .action-buy:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 15px var(--accent-glow), inset 0 2px 4px rgba(255,255,255,0.4); }
+        .action-buy:active:not(:disabled) { transform: scale(0.96); }
+
+        .action-rent {
+            background: var(--glass-bg); color: var(--neon-purple); border: 2px solid var(--neon-purple);
+            backdrop-filter: blur(8px); box-shadow: var(--glass-highlight);
+        }
+        .action-rent:hover { background: var(--ambient-1); transform: translateY(-2px); box-shadow: 0 4px 15px var(--accent-glow); }
+        .action-rent:active { transform: scale(0.96); }
+
+        .action-read {
+            background: linear-gradient(135deg, #10B981, #059669); color: #FFF;
+            box-shadow: 0 2px 10px var(--success-glow), inset 0 2px 4px rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .action-read:hover { transform: translateY(-2px); box-shadow: 0 4px 15px var(--success-glow); }
+        .action-read:active { transform: scale(0.96); }
+
+        .action-read-rented {
+            background: linear-gradient(135deg, #F59E0B, #D97706); color: #FFF;
+            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3), inset 0 2px 4px rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .action-read-rented:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5); }
+        .action-read-rented:active { transform: scale(0.96); }
+
+        .action-logout {
+            background: var(--glass-bg); color: var(--neon-pink); border: 2px solid var(--neon-pink);
+            backdrop-filter: blur(8px);
+        }
+        .action-logout:hover { background: rgba(244, 63, 94, 0.1); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(244, 63, 94, 0.2); }
+
+        .action-in-cart {
+            background: var(--glass-bg); color: var(--neon-purple); border: 2px solid var(--neon-purple);
+            backdrop-filter: blur(8px); box-shadow: var(--glass-highlight);
+        }
+        .action-in-cart:hover { background: var(--ambient-1); transform: translateY(-2px); box-shadow: 0 4px 10px var(--accent-glow); }
+        .action-in-cart:active { transform: scale(0.96); }
+
+        .page-btn.small-btn { 
+            padding: 0.5rem 1rem; background: var(--bg-surface); border: 1px solid var(--glass-border); 
+            color: var(--text-main); width: auto; box-shadow: 0 2px 6px rgba(0,0,0,0.05), var(--glass-highlight);
+        }
+        body.dark-theme .page-btn.small-btn { box-shadow: 0 2px 6px rgba(0,0,0,0.4), var(--glass-highlight); }
+        .page-btn.small-btn:hover:not(:disabled) { border-color: var(--neon-purple); color: var(--neon-purple); transform: translateY(-2px); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+        /* --- FOOTER --- */
+        .site-footer {
+            margin: 3rem 0 0 0; padding: 2rem 1.5rem;
+            border-radius: 16px; display: flex; flex-direction: column; gap: 1.5rem; flex-shrink: 0;
+            background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+        }
+
+        .footer-content { display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; text-align: center;}
+        .footer-section { flex: 1 1 100%; max-width: 600px;}
+        .footer-section h3 { font-family: var(--font-serif); font-size: 1.3rem; margin: 0 0 0.8rem 0; color: var(--text-main); transition: color 0.3s ease;}
+        .footer-section p { color: var(--text-muted); line-height: 1.6; margin: 0 0 1rem 0; font-size: 0.85rem; transition: color 0.3s ease;}
+        .footer-bottom { text-align: center; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); color: var(--text-muted); font-size: 0.75rem; font-weight: 500; transition: border-color 0.3s ease;}
+
+        /* --- MODALS & OVERLAYS --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+            transform: translateZ(0);
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        
+        /* Modal Stacking Hierarchy to prevent overlapping bugs */
+        #book-info-modal { z-index: 1100; }
+        #cart-modal { z-index: 1200; } 
+        #auth-modal { z-index: 1500; } 
+        #payment-modal { z-index: 1600; } 
+        #success-modal { z-index: 1700; } 
+
+        .info-container {
+            background: var(--bg-surface); border: 1px solid var(--glass-border);
+            border-radius: 20px; color: var(--text-main);
+            padding: 2.5rem; max-width: 400px; width: 90%; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2), var(--glass-highlight);
+            transform: scale(0.95) translateY(15px) translateZ(0); opacity: 0; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+            text-align: center; position: relative;
+            will-change: transform, opacity;
+            
+            /* Completely hides ugly scrollbar visually, but keeps scrolling functional */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+
+        /* Hides scrollbar for Webkit browsers (Chrome, Safari, Edge) */
+        .info-container::-webkit-scrollbar {
+            display: none; 
+        }
+
+        body.dark-theme .info-container { box-shadow: 0 15px 40px rgba(0,0,0,0.7), var(--glass-highlight); }
+        .modal-overlay.active .info-container { transform: scale(1) translateY(0) translateZ(0); opacity: 1; }
+
+        .info-container h3 { font-family: var(--font-serif); font-size: 1.4rem; margin: 0 0 0.5rem 0; color: var(--text-main); font-weight: 800;}
+        .info-container p { color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.85rem; line-height: 1.6;}
+        
+        .close-modal-btn {
+            position: absolute; top: 1rem; right: 1rem;
+            background: var(--bg-surface); border: 1px solid var(--glass-border); 
+            width: 32px; height: 32px; border-radius: 50%;
+            font-size: 1.1rem; color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease, border-color 0.3s ease, background-color 0.3s ease; z-index: 20;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05), var(--glass-highlight);
+            transform: translateZ(0);
+        }
+        body.dark-theme .close-modal-btn { box-shadow: 0 2px 8px rgba(0,0,0,0.3), var(--glass-highlight); }
+        .close-modal-btn:hover { color: var(--neon-pink); border-color: var(--neon-pink); transform: rotate(180deg) scale(1.1) translateZ(0) !important; background: rgba(244, 63, 94, 0.1); box-shadow: 0 4px 15px rgba(244, 63, 94, 0.2); }
+
+        #auth-form input {
+            padding: 1rem 1.2rem; font-family: var(--font-ui); background: rgba(255,255,255,0.4); 
+            color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; width: 100%; margin-bottom: 1.2rem; font-size: 0.95rem;
+            backdrop-filter: blur(10px); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+        body.dark-theme #auth-form input { background: rgba(0,0,0,0.2); box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
+        #auth-form input:focus { outline: none; border-color: var(--neon-purple); box-shadow: 0 0 0 3px var(--accent-glow), inset 0 1px 2px rgba(255,255,255,0.3); transform: translateY(-2px); background: var(--bg-surface-hover); }
+        #auth-submit { font-size: 0.95rem; padding: 0.8rem; margin-top: 0.5rem; }
+
+        .settings-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.2rem; background: var(--bg-surface); border-radius: 14px; margin-top: 1rem; font-size: 0.95rem;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .switch { position: relative; display: inline-block; width: 48px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; border: 1px solid rgba(0,0,0,0.1);}
+        body.dark-theme .slider { background-color: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2);}
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 3px; background-color: #ffffff; transition: transform .4s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3);}
+        input:checked + .slider { background: var(--accent-gradient); border-color: transparent; }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* Profile & Cart */
+        .profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 2rem; }
+        .profile-stat-box { background: var(--bg-surface); padding: 1.2rem 1rem; border-radius: 12px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; justify-content: center; transition: box-shadow 0.2s, border-color 0.2s;}
+        .profile-stat-box:hover { box-shadow: 0 0 15px var(--accent-glow); border-color: var(--neon-purple); }
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.4rem; font-family: var(--font-ui); text-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .stat-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* --- PAYMENT TABS & QR --- */
+        .payment-tabs {
+            position: relative; display: flex; gap: 0.5rem; margin-bottom: 2rem;
+            background: rgba(255,255,255,0.3); padding: 0.5rem; border-radius: 16px;
+            border: 1px solid var(--glass-border); backdrop-filter: blur(10px); box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        body.dark-theme .payment-tabs { background: rgba(0,0,0,0.2); box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }
+        
+        .payment-tab-btn {
+            position: relative; flex: 1; background: transparent; border: none; padding: 0.8rem;
+            font-family: var(--font-ui); font-size: 0.9rem; font-weight: 700; color: var(--text-muted);
+            border-radius: 12px; cursor: pointer; transition: color 0.3s ease; z-index: 2;
+        }
+        .payment-tab-btn::before {
+            content: ''; position: absolute; inset: 0; border-radius: 12px;
+            background: var(--bg-surface-hover); box-shadow: var(--shadow-sm), var(--glass-highlight);
+            transform: scale(0.9); opacity: 0; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease; z-index: -1;
+        }
+        .payment-tab-btn.active { color: var(--neon-purple); }
+        .payment-tab-btn.active::before { transform: scale(1); opacity: 1; }
+        
+        .payment-tab-content { display: none; flex-direction: column; align-items: center; width: 100%; opacity: 0;}
+        .payment-tab-content.active { display: flex; animation: tabFadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        
+        @keyframes tabFadeIn {
+            0% { opacity: 0; transform: translateY(10px) scale(0.98); filter: blur(4px); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+        
+        /* Realistic QR Scanner Simulation */
+        .qr-container { 
+            background: rgba(255,255,255,0.9); padding: 1.2rem; border-radius: 16px; 
+            display: inline-block; margin-bottom: 1rem; border: 1px solid var(--glass-border); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), inset 0 2px 4px rgba(255,255,255,0.8); 
+            position: relative; overflow: hidden;
+        }
+        .qr-container img { width: 140px; height: 140px; object-fit: contain; border-radius: 8px; mix-blend-mode: multiply;}
+        
+        .qr-scanner-line {
+            position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: var(--success-color); box-shadow: 0 0 15px 3px var(--success-color);
+            display: none; z-index: 5;
+        }
+        
+        @keyframes scanLineAnimation {
+            0% { top: 5%; opacity: 0;}
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 95%; opacity: 0;}
+        }
+
+        #qr-scan-overlay {
+            position: absolute; inset: 0; background: rgba(16, 185, 129, 0.85); border-radius: 16px; 
+            display: none; flex-direction: column; justify-content: center; align-items: center; 
+            color: white; font-weight: 800; font-size: 1.1rem; backdrop-filter: blur(4px); z-index: 10;
+        }
+
+        .payment-input { width: 100%; padding: 0.8rem 1rem; font-family: var(--font-ui); font-size: 0.9rem; background: rgba(255,255,255,0.4); color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 10px; margin-bottom: 1rem; transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; backdrop-filter: blur(10px); }
+        body.dark-theme .payment-input { background: rgba(0,0,0,0.2); }
+        .payment-input:focus { outline: none; border-color: var(--neon-purple); box-shadow: 0 0 0 3px var(--accent-glow); background: var(--bg-surface-hover); transform: translateY(-2px);}
+        .card-row { display: flex; gap: 0.8rem; width: 100%; }
+
+        .execute-payment-btn:disabled {
+            opacity: 0.5; cursor: not-allowed; filter: grayscale(50%); box-shadow: none; transform: none;
+        }
+
+        #cart-items-container::-webkit-scrollbar { width: 4px; display: block; }
+        #cart-items-container::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
+
+        .cart-item { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1rem; background: var(--bg-surface); border: 1px solid var(--glass-border); border-radius: 12px; margin-bottom: 0.8rem; text-align: left; transition: transform 0.2s ease, border-color 0.2s ease;}
+        body.dark-theme .cart-item { background: rgba(0,0,0,0.2); box-shadow: inset 0 1px 2px rgba(255,255,255,0.05); }
+        .cart-item:hover { transform: translateX(4px); border-color: var(--neon-purple);}
+        .cart-item img { width: 45px; height: 65px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .cart-item-details { flex: 1; }
+        .cart-item-title { font-weight: 800; font-size: 0.9rem; margin: 0 0 0.2rem 0; color: var(--text-main); font-family: var(--font-serif);}
+        .cart-item-type { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
+        .cart-item-price { font-weight: 800; font-size: 1rem; color: var(--neon-purple); margin-top: 0.2rem; }
+        .remove-cart-item-btn { background: var(--bg-surface); border: 1px solid var(--glass-border); color: var(--text-muted); width: 28px; height: 28px; border-radius: 50%; font-size: 1rem; cursor: pointer; transition: transform 0.3s ease, color 0.3s ease, border-color 0.3s ease; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);}
+        .remove-cart-item-btn:hover { color: var(--neon-pink); border-color: var(--neon-pink); background: rgba(244,63,94,0.1); transform: rotate(90deg) scale(1.1); box-shadow: 0 4px 15px rgba(244,63,94,0.3);}
+
+        .book-detail-container { max-width: 850px; padding: 0; overflow: hidden; text-align: left; }
+        .book-detail-content { display: flex; flex-direction: row; }
+        .book-detail-left { flex: 0 0 40%; position: relative; background: var(--bg-body); }
+        .book-detail-left img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .book-detail-right { flex: 1; padding: 3.5rem 3.5rem 3.5rem 2.5rem; display: flex; flex-direction: column; justify-content: center; position: relative; }
+        
+        /* FIXED: ISOLATED BADGE CSS TO PREVENT OVERLAP BUG */
+        .book-detail-badge {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-weight: 800; 
+            font-size: 0.65rem;
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            background: var(--bg-surface);
+            color: var(--neon-purple);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05), var(--glass-highlight);
+            align-self: flex-start;
+            margin-bottom: 1.2rem;
+            width: max-content;
+            z-index: 2;
+        }
+        body.dark-theme .book-detail-badge { background: rgba(30, 41, 59, 0.8); border-color: rgba(255,255,255,0.15); box-shadow: 0 2px 10px rgba(0,0,0,0.4), var(--glass-highlight); }
+
+        .detail-divider { height: 4px; background: var(--accent-gradient); margin: 1.8rem 0; width: 80px; border-radius: 5px; box-shadow: 0 2px 10px var(--accent-glow); }
+        .detail-desc { color: var(--text-muted); line-height: 1.8; font-size: 1rem; margin-bottom: 2.5rem; font-weight: 400;}
+
+        /* --- TOAST NOTIFICATIONS --- */
+        .toast-popup {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); opacity: 0;
+            background: var(--glass-bg); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--glass-border); border-top-color: var(--glass-border-light);
+            padding: 14px 28px; border-radius: 50px; box-shadow: 0 15px 40px rgba(0,0,0,0.15), var(--glass-highlight);
+            display: flex; align-items: center; gap: 15px; z-index: 2000;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            color: var(--text-main); font-weight: 600; font-family: var(--font-ui); font-size: 0.95rem;
+            pointer-events: none;
+        }
+        body.dark-theme .toast-popup { box-shadow: 0 15px 40px rgba(0,0,0,0.6), var(--glass-highlight); }
+        .toast-popup.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: all; }
+        .toast-btn { background: var(--accent-gradient); color: white; border: none; padding: 6px 16px; border-radius: 30px; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px var(--accent-glow);}
+        .toast-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px var(--accent-glow); }
+        .toast-btn.cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--glass-border); box-shadow: none; }
+        .toast-btn.cancel:hover { background: var(--bg-surface-hover); color: var(--text-main); }
+
+        /* --- IMMERSIVE READER MODE --- */
+        .reader-container {
+            width: 95%; max-width: 1200px; height: 85vh; display: flex; flex-direction: column;
+            background: var(--paper-bg); border-radius: 20px; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255,255,255,0.5);
+            overflow: hidden; border: 1px solid var(--glass-border); 
+            transform: scale(0.95) translateY(20px) translateZ(0); 
+            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.5s ease;
+            filter: blur(10px);
+            will-change: transform, filter;
+            position: relative;
+        }
+        .modal-overlay.active .reader-container { transform: scale(1) translateY(0) translateZ(0); filter: blur(0); }
+        
+        .reader-header { padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); background: var(--glass-bg); backdrop-filter: blur(16px); z-index: 10;}
+        
+        #close-reader { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease; }
+        #close-reader:hover { transform: rotate(180deg) scale(1.1) translateZ(0) !important; color: var(--neon-pink) !important; border-color: var(--neon-pink) !important; background: rgba(244, 63, 94, 0.1) !important; box-shadow: 0 4px 15px rgba(244, 63, 94, 0.2) !important; }
+
+        .zoom-slider { 
+            -webkit-appearance: none; appearance: none; 
+            width: 140px; height: 8px; background: rgba(148, 163, 184, 0.5); 
+            border-radius: 5px; outline: none; transition: background-color 0.3s ease; 
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.8);
+        }
+        body.dark-theme .zoom-slider { background: rgba(255, 255, 255, 0.2); border-color: rgba(255,255,255,0.1); }
+        
+        .zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--neon-purple); cursor: pointer; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 2px solid white; }
+        .zoom-slider::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--neon-purple); cursor: pointer; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 2px solid white; }
+        .zoom-slider::-moz-range-track { background: transparent; }
+        .zoom-slider::-webkit-slider-thumb:hover { transform: scale(1.3); box-shadow: 0 0 10px var(--accent-glow); }
+        .zoom-slider::-moz-range-thumb:hover { transform: scale(1.3); box-shadow: 0 0 10px var(--accent-glow); }
+
+        /* --- READER SIDEBAR (TOC) --- */
+        .reader-sidebar {
+            position: absolute; left: -280px; top: 65px; bottom: 55px; width: 280px;
+            background: var(--bg-surface); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid var(--glass-border); box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+            z-index: 50; transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); display: flex; flex-direction: column;
+        }
+        body.dark-theme .reader-sidebar { box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+        .reader-sidebar.active { left: 0; }
+        .toc-header { padding: 1.2rem 1.5rem; font-family: var(--font-serif); font-weight: 800; font-size: 1.1rem; border-bottom: 1px solid var(--border-light); color: var(--text-main); display: flex; justify-content: space-between; align-items: center;}
+        .toc-list { flex: 1; overflow-y: auto; padding: 1rem; list-style: none; margin: 0; display: flex; flex-direction: column; gap: 4px;}
+        .toc-list::-webkit-scrollbar { width: 4px; }
+        .toc-list::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
+        
+        /* Word wrapping to prevent text cutoff */
+        .toc-item { padding: 0.8rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: var(--text-muted); transition: all 0.2s; word-wrap: break-word; line-height: 1.4; border: 1px solid transparent; }
+        
+        .toc-item:hover { background: var(--ambient-1); color: var(--neon-purple); border-color: var(--glass-border); transform: translateX(3px);}
+
+        /* --- READER SETTINGS DROPDOWN --- */
+        .reader-settings-dropdown {
+            position: absolute; right: 20px; top: 75px; background: var(--bg-surface); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border); border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15), var(--glass-highlight);
+            width: 260px; padding: 1.5rem; z-index: 60; transform: translateY(-15px) scale(0.95); opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        body.dark-theme .reader-settings-dropdown { box-shadow: 0 15px 40px rgba(0,0,0,0.6), var(--glass-highlight); }
+        .reader-settings-dropdown.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: all; }
+        
+        .setting-group { margin-bottom: 1.2rem; }
+        .setting-group:last-child { margin-bottom: 0; }
+        .setting-label { font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: var(--text-muted); margin-bottom: 0.6rem; letter-spacing: 1px; }
+        .setting-options { display: flex; gap: 8px; background: var(--bg-body); padding: 4px; border-radius: 10px; border: 1px solid var(--glass-border);}
+        .setting-opt-btn { flex: 1; padding: 0.5rem; border: none; border-radius: 6px; background: transparent; color: var(--text-muted); font-weight: 700; cursor: pointer; transition: all 0.2s; font-size: 0.8rem; font-family: var(--font-ui);}
+        .setting-opt-btn:hover { color: var(--text-main); }
+        .setting-opt-btn.active { background: var(--bg-surface-hover); color: var(--neon-purple); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        
+        /* Reader Theme Overrides */
+        .reader-container.theme-light .book-spread, .reader-container.theme-light .page, .reader-container.theme-light .flip-front, .reader-container.theme-light .flip-back { background-color: #FCFCFA !important; color: #1E293B !important; }
+        .reader-container.theme-light .reader-text p, .reader-container.theme-light .title-page-text h2 { color: #1E293B !important; }
+        .reader-container.theme-light .reader-text { color: #1E293B !important; }
+        
+        .reader-container.theme-sepia .book-spread, .reader-container.theme-sepia .page, .reader-container.theme-sepia .flip-front, .reader-container.theme-sepia .flip-back { background-color: #F4ECD8 !important; color: #5B4636 !important; }
+        .reader-container.theme-sepia .reader-text p, .reader-container.theme-sepia .title-page-text h2 { color: #5B4636 !important; }
+        .reader-container.theme-sepia .reader-text { color: #5B4636 !important; }
+        
+        .reader-container.theme-dark .book-spread, .reader-container.theme-dark .page, .reader-container.theme-dark .flip-front, .reader-container.theme-dark .flip-back { background-color: #111827 !important; color: #E2E8F0 !important; }
+        .reader-container.theme-dark .reader-text p, .reader-container.theme-dark .title-page-text h2 { color: #E2E8F0 !important; }
+        .reader-container.theme-dark .reader-text { color: #E2E8F0 !important; }
+
+        .reader-container.font-sans .reader-text { font-family: var(--font-ui); }
+        .reader-container.spacing-loose .reader-text { line-height: 2.2; }
+        .reader-container.spacing-tight .reader-text { line-height: 1.5; }
+
+        /* TTS Active Animation */
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); } }
+        .tts-active { color: var(--neon-purple) !important; border-color: var(--neon-purple) !important; animation: pulseGlow 1.5s infinite !important; }
+
+        .book-spread { display: flex; flex: 1; position: relative; perspective: 3000px; overflow: hidden; background: var(--paper-bg); transition: background-color 0.4s ease;}
+        .book-spine { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: linear-gradient(to right, transparent, rgba(0,0,0,0.1), transparent); z-index: 5; box-shadow: 0 0 15px rgba(0,0,0,0.1);}
+        body.dark-theme .book-spine { background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent); }
+        
+        .page { width: 50%; height: 100%; padding: 3rem 4rem; box-sizing: border-box; background: var(--paper-bg); color: var(--paper-text); position: relative; transition: background-color 0.4s ease, color 0.4s ease;}
+        .page::before { content: ''; position: absolute; top:0; left:0; right:0; bottom:0; background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.03"/%3E%3C/svg%3E'); pointer-events: none; z-index: 1;}
+        body.dark-theme .page::before { opacity: 0.015; }
+
+        .left-page { box-shadow: var(--spine-shadow-left); border-radius: 8px 0 0 8px; }
+        .right-page { box-shadow: var(--spine-shadow-right); border-radius: 0 8px 8px 0; }
+        
+        .reader-text { font-family: var(--font-serif); font-size: 1.05rem; line-height: 1.8; text-align: justify; height: 100%; overflow-y: auto; padding-right: 15px; transition: font-size 0.4s cubic-bezier(0.25, 1, 0.5, 1), font-family 0.3s ease, line-height 0.3s ease; position: relative; z-index: 2; color: var(--paper-text);}
+        .reader-text::-webkit-scrollbar { width: 6px; display: block; }
+        .reader-text::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 10px; }
+        
+        .reader-text p { margin: 0 0 1.4rem 0; color: inherit;}
+        
+        .title-page-text { text-align: center; margin-top: 35%; color: inherit;}
+        .title-page-text h2 { font-size: 2.2rem; margin-bottom: 0.8rem; font-weight: 800; font-family: var(--font-ui); letter-spacing: -1px; color: inherit;}
+        .title-page-text h4 { font-size: 1.1rem; opacity: 0.7; font-family: var(--font-ui); font-weight: 500;}
+        
+        .flip-overlay { position: absolute; top: 0; width: 50%; height: 100%; transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.45, 0.05, 0.15, 1); z-index: 100; transform: translateZ(0);}
+        .flip-overlay.flip-next { right: 0; transform-origin: left center; }
+        .flip-overlay.flip-prev { left: 0; transform-origin: right center; }
+        
+        @keyframes turnPageNext {
+            0% { transform: translateZ(0) rotateY(0deg) scale(1); box-shadow: -5px 0 15px rgba(0,0,0,0); }
+            50% { transform: translateZ(50px) rotateY(-90deg) scale(1.02); box-shadow: -20px 0 40px rgba(0,0,0,0.1); }
+            100% { transform: translateZ(0) rotateY(-180deg) scale(1); box-shadow: -5px 0 15px rgba(0,0,0,0); }
+        }
+        @keyframes turnPagePrev {
+            0% { transform: translateZ(0) rotateY(0deg) scale(1); box-shadow: 5px 0 15px rgba(0,0,0,0); }
+            50% { transform: translateZ(50px) rotateY(90deg) scale(1.02); box-shadow: 20px 0 40px rgba(0,0,0,0.1); }
+            100% { transform: translateZ(0) rotateY(180deg) scale(1); box-shadow: 5px 0 15px rgba(0,0,0,0); }
+        }
+
+        .flip-overlay.flip-next.active { animation: turnPageNext 0.8s ease-in-out forwards; }
+        .flip-overlay.flip-prev.active { animation: turnPagePrev 0.8s ease-in-out forwards; }
+        
+        .flip-front, .flip-back { position: absolute; top: 0; left: 0; width: 100%; height: 100%; backface-visibility: hidden; background: var(--paper-bg); padding: 3rem 4rem; box-sizing: border-box; overflow: hidden; transition: background-color 0.4s ease;}
+        .flip-front::before, .flip-back::before { content: ''; position: absolute; top:0; left:0; right:0; bottom:0; background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.03"/%3E%3C/svg%3E'); pointer-events: none; z-index: 1;}
+        body.dark-theme .flip-front::before, body.dark-theme .flip-back::before { opacity: 0.015; }
+
+        /* Dynamic Lighting Overlays during flip */
+        .flip-front::after, .flip-back::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 10; opacity: 0; }
+        .flip-next .flip-front::after { background: linear-gradient(to left, rgba(0,0,0,0.25) 0%, transparent 80%); }
+        .flip-next .flip-back::after { background: linear-gradient(to right, rgba(0,0,0,0.15) 0%, transparent 80%); opacity: 1; }
+        .flip-prev .flip-front::after { background: linear-gradient(to right, rgba(0,0,0,0.25) 0%, transparent 80%); }
+        .flip-prev .flip-back::after { background: linear-gradient(to left, rgba(0,0,0,0.15) 0%, transparent 80%); opacity: 1; }
+
+        @keyframes pageShadowDarken { 0% {opacity: 0;} 100% {opacity: 1;} }
+        @keyframes pageShadowLighten { 0% {opacity: 1;} 100% {opacity: 0;} }
+
+        .flip-next.active .flip-front::after, .flip-prev.active .flip-front::after { animation: pageShadowDarken 0.8s ease-in-out forwards; }
+        .flip-next.active .flip-back::after, .flip-prev.active .flip-back::after { animation: pageShadowLighten 0.8s ease-in-out forwards; }
+
+        .flip-next .flip-front { box-shadow: var(--spine-shadow-right); border-radius: 0 8px 8px 0;}
+        .flip-next .flip-back { transform: rotateY(180deg); box-shadow: var(--spine-shadow-left); border-right: 1px solid var(--border-light); border-radius: 8px 0 0 8px;}
+        .flip-prev .flip-front { box-shadow: var(--spine-shadow-left); border-right: 1px solid var(--border-light); border-radius: 8px 0 0 8px;}
+        .flip-prev .flip-back { transform: rotateY(180deg); box-shadow: var(--spine-shadow-right); border-radius: 0 8px 8px 0;}
+        
+        .reader-footer { padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-light); font-size: 0.95rem; background: var(--glass-bg); backdrop-filter: blur(20px);}
+        
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+        
+        .page-input { width: 55px; padding: 0.5rem; background: rgba(255,255,255,0.4); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-main); text-align: center; font-size: 0.95rem; font-weight: 700; transition: border-color 0.3s ease, box-shadow 0.3s ease; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);}
+        body.dark-theme .page-input { background: rgba(0,0,0,0.2); }
+        .page-input:focus { outline: none; border-color: var(--neon-purple); background: var(--bg-surface-hover); box-shadow: 0 0 0 3px var(--accent-glow);}
+
+        /* Spinner for Reader Fallback */
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid var(--border-light);
+            border-top-color: var(--neon-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem auto;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            header { padding: 0.8rem 1.2rem; }
+            .brand-container h1 { font-size: 1.3rem; }
+            .header-controls { gap: 10px; }
+            .icon-btn { width: 36px; height: 36px; }
+            
+            .library-layout { flex-direction: column; padding: 1rem; gap: 1rem; }
+            
+            .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 0.6rem; border-radius: 12px; }
+            .sidebar-title, .sidebar-divider { display: none; }
+            .category-btn { flex: 0 0 auto; margin-right: 0.6rem; padding: 0.6rem 1rem; font-size: 0.85rem; border-radius: 6px; margin-bottom: 0;}
+            .category-btn.active::before { display: none; }
+            .category-btn.active::after { content:''; position:absolute; bottom: 0; left: 15%; width: 70%; height: 3px; background:var(--accent-gradient); border-radius: 3px 3px 0 0; box-shadow: 0 -2px 5px var(--neon-purple);}
+            
+            .section-header { padding: 2rem 1.2rem; border-radius: 16px;}
+            .section-title { font-size: 2rem; }
+            .section-subtitle { font-size: 0.9rem; }
+            
+            #search-input { padding-right: 55px; }
+
+            .bookshelf { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.2rem; }
+            .book-info { padding: 0.8rem; }
+            
+            .info-container { padding: 1.8rem; width: 95%; max-width: 360px; border-radius: 24px;}
+            .profile-stats-grid { grid-template-columns: 1fr; gap: 0.8rem; }
+            .qr-container img { width: 150px; height: 150px; }
+
+            .book-detail-content { flex-direction: column; }
+            .book-detail-left { height: 280px; }
+            .book-detail-right { padding: 2rem 1.5rem; text-align: center; }
+            .book-detail-badge { align-self: center !important; margin-bottom: 1rem !important; }
+            .detail-divider { margin: 1.2rem auto; }
+            
+            .reader-container { width: 100%; height: 100vh; border-radius: 0; transform: scale(0.95) translateY(20px); }
+            .modal-overlay.active .reader-container { transform: scale(1) translateY(0); }
+            .reader-header { padding: 0.8rem 1.2rem; flex-wrap: wrap; }
+            .zoom-container { order: 3; width: 100%; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--glass-border); }
+            .page, .flip-front, .flip-back { padding: 1.5rem 1.2rem; }
+            .reader-text { font-size: 0.9rem; }
+            .title-page-text { margin-top: 20%; }
+            .title-page-text h2 { font-size: 1.6rem; }
+            .title-page-text h4 { font-size: 0.95rem; }
+            .reader-footer { padding: 0.8rem 1.2rem; flex-wrap: wrap; }
+            .page-center { width: 100%; order: -1; justify-content: center; margin-bottom: 15px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; flex-direction: column; gap:10px;}
+            .jump-container { margin-left: 0 !important; padding-left: 0 !important; border-left: none !important;}
+            
+            .reader-sidebar { left: -100%; width: 80%; }
+            .reader-settings-dropdown { right: 10px; left: 10px; width: auto;}
+        }
+    </style>
+</head>
+<body>
+
+    <svg style="display:none;" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="icon-bookmark" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </symbol>
+    </svg>
+
+    <div id="app-toast" class="toast-popup">
+        <span id="toast-msg"></span>
+        <div id="toast-actions" style="display: none; align-items: center; gap: 10px;">
+            <button id="toast-btn-yes" class="toast-btn">Yes</button>
+            <button id="toast-btn-no" class="toast-btn cancel">No</button>
+        </div>
+    </div>
+
+    <header class="liquid-panel">
+        <div class="brand-container">
+            <h1>VirtuShelf</h1>
+        </div>
+        <div class="header-controls">
+            <div id="user-status" style="font-weight: 700; font-size: 0.9rem; color: var(--text-muted);"></div>
+            
+            <button id="cart-btn" class="icon-btn" title="View Cart">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="21" r="1.5"></circle>
+                    <circle cx="20" cy="21" r="1.5"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                <span id="cart-badge" class="cart-badge" style="display:none;">0</span>
+            </button>
+            
+            <button id="settings-btn" class="icon-btn" title="Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+
+            <button id="auth-btn" class="icon-btn" title="Login / Profile">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="library-layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">Categories</div>
+            <button class="category-btn active" data-category="All">📚 All Books</button>
+            <button class="category-btn" data-category="Fiction">🖋️ Fiction</button>
+            <button class="category-btn" data-category="Sci-Fi & Fantasy">🚀 Sci-Fi & Fantasy</button>
+            <button class="category-btn" data-category="Philosophy">🧠 Philosophy</button>
+            <button class="category-btn" data-category="Science & History">🧬 Science & History</button>
+            <button class="category-btn" data-category="Mystery & Thriller">🕵️ Mystery & Thriller</button>
+            <button class="category-btn" data-category="Romance & Drama">❤️ Romance & Drama</button>
+            
+            <div class="sidebar-divider"></div>
+            
+            <div class="sidebar-title">Your Collection</div>
+            <button id="my-library-btn" class="category-btn">✨ My Library</button>
+            <button id="my-favorites-btn" class="category-btn">❤️ Favorites</button>
+            <button id="my-wishlist-btn" class="category-btn">🔖 Wishlist</button>
+        </aside>
+
+        <main class="main-content">
+            <section class="section-header">
+                <h2 class="section-title">What will you read today?</h2>
+                <p class="section-subtitle">
+                    Dive into thousands of books, academic journals, and immersive stories.
+                </p>
+                
+                <div class="search-container">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="search-input" placeholder="Search by title, author, or genre...">
+                    <div class="search-actions">
+                        <button id="clear-btn" class="clear-icon-btn" title="Clear Search">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <div id="bookshelf" class="bookshelf"></div>
+
+            <footer class="site-footer">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <h3>VirtuShelf</h3>
+                        <p>Online libraries, also known as digital libraries or e-libraries, provide instant access to books, academic journals, movies, and more through the internet.</p>
+                        <p style="font-size: 0.85rem; color: var(--neon-purple); font-weight: 700; margin-top: 1.2rem;">
+                            Created by: M.Siva Kumar<br>
+                            Dept of B.Sc. CS 3rd year project<br>
+                            JHA Argarsen College
+                        </p>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    &copy; 2026 VirtuShelf Digital Library. All rights reserved.
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <div id="cart-modal" class="modal-overlay">
+        <div class="info-container" style="max-width: 500px; width: 95%;">
+            <button id="close-cart" class="close-modal-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h3 style="margin-bottom: 0.5rem; text-align: left;">Your Cart</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+                <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);"><span id="cart-count-text">0</span> Items</span>
+                <button id="clear-cart-btn" style="background: none; border: none; color: var(--neon-pink); font-size: 0.8rem; cursor: pointer; font-weight: 700; padding: 0; transition: transform 0.2s;">Clear Cart</button>
+            </div>
+            
+            <div id="cart-items-container" style="max-height: 40vh; overflow-y: auto; margin-bottom: 1.2rem; padding-right: 10px; text-align: left;"></div>
+            
+            <div style="border-top: 1px dashed var(--glass-border); padding-top: 1.2rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+                <span style="font-weight: 800; font-size: 1.1rem; color: var(--text-main);">Total:</span>
+                <span style="font-weight: 800; font-size: 1.4rem; color: var(--neon-purple); text-shadow: 0 2px 8px var(--accent-glow);">₹<span id="cart-total-price">0</span></span>
+            </div>
+            
+            <button id="cart-checkout-btn" class="read-btn action-buy" style="padding: 1rem; font-size: 1rem; width: 100%;">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal-overlay">
+        <div class="info-container">
+            <button id="close-settings" class="close-modal-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h3>Settings</h3>
+            <p>Customize your reading experience.</p>
+            <div class="settings-item">
+                <span style="font-weight: 700;">Dark Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div id="auth-modal" class="modal-overlay">
+        <div class="info-container">
+            <button id="close-auth" class="close-modal-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h3 id="auth-title">Welcome Back</h3>
+            <p id="auth-desc">Login to access your personal library.</p>
+            <form id="auth-form">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit" id="auth-submit" class="read-btn action-buy">Login</button>
+            </form>
+            <div id="auth-message" style="margin-top: 0.8rem; font-size: 0.9rem; font-weight: 700; min-height: 1.2rem;"></div>
+            <p style="margin-top: 0.8rem; font-size: 0.85rem;">
+                <span id="auth-switch-text">Don't have an account?</span> 
+                <a href="#" id="auth-switch-link" style="color: var(--neon-purple); font-weight: 800; text-decoration: none;">Register Now</a>
+            </p>
+        </div>
+    </div>
+
+    <div id="profile-modal" class="modal-overlay">
+        <div class="info-container">
+            <button id="close-profile" class="close-modal-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div style="font-size: 3.5rem; margin-bottom: 0.4rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">👤</div>
+            <h3 id="profile-username" style="margin-bottom: 0.2rem; font-family: var(--font-ui);">Username</h3>
+            <p style="color: var(--neon-purple); font-size: 0.85rem; margin-bottom: 2rem; font-weight: 800; letter-spacing: 1px; text-shadow: 0 2px 4px var(--accent-glow);">VirtuShelf Member 🌟</p>
+
+            <div class="profile-stats-grid">
+                <div class="profile-stat-box">
+                    <div id="profile-purchased-count" class="stat-value" style="color: var(--success-color);">0</div>
+                    <div class="stat-label">Purchased</div>
+                </div>
+                <div class="profile-stat-box">
+                    <div id="profile-rented-count" class="stat-value" style="color: #FF8C00;">0</div>
+                    <div class="stat-label">Rented</div>
+                </div>
+                <div class="profile-stat-box">
+                    <div id="profile-collection-value" class="stat-value" style="color: var(--neon-purple);">₹0</div>
+                    <div class="stat-label">Total Value</div>
+                </div>
+                <div class="profile-stat-box">
+                    <div id="profile-favorite-genre" class="stat-value" style="font-size: 1.1rem; padding-top: 6px;">None</div>
+                    <div class="stat-label">Top Genre</div>
+                </div>
+            </div>
+            <button id="logout-btn" class="read-btn action-logout" style="padding: 0.8rem;">Logout from Account</button>
+        </div>
+    </div>
+
+    <div id="book-info-modal" class="modal-overlay">
+        <div class="info-container book-detail-container">
+            <button id="close-book-info" class="close-modal-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            
+            <div class="book-detail-content">
+                <div class="book-detail-left">
+                    <button id="detail-heart-btn" class="heart-btn" title="Add to Favorites" style="top: 15px; left: 15px; right: auto; width: 44px; height: 44px;">
+                        <svg class="heart-icon" viewBox="0 0 24 24">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                    </button>
+                    <button id="detail-wishlist-btn" class="wishlist-icon-btn" title="Add to Wishlist" style="top: 15px; left: 68px; right: auto; width: 44px; height: 44px; position: absolute;">
+                        <svg class="wishlist-icon"><use href="#icon-bookmark"></use></svg>
+                    </button>
+                    <img id="detail-cover" src="" alt="Book Cover">
+                </div>
+                <div class="book-detail-right">
+                    <div id="detail-badge" class="book-detail-badge"></div>
+                    <h2 id="detail-title" style="margin: 0; font-size: 1.8rem; font-family: var(--font-serif); color: var(--text-main); font-weight: 800; line-height:1.2;"></h2>
+                    <h4 id="detail-author" style="margin: 0.6rem 0 0 0; color: var(--text-muted); font-weight: 600; font-size: 1rem;"></h4>
+                    
+                    <div class="detail-divider"></div>
+                    
+                    <p class="detail-desc">Immerse yourself in this timeless literary masterpiece. Experience the unforgettable characters, rich storytelling, and captivating world that has enchanted readers across generations.</p>
+                    
+                    <div id="detail-actions" style="display: flex; gap: 0.8rem; width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="payment-modal" class="modal-overlay">
+        <div class="info-container">
+            <button id="close-payment" class="close-modal-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h3 style="margin-bottom: 1.2rem;">Checkout</h3>
+            
+            <div class="payment-tabs">
+                <button class="payment-tab-btn active" data-target="tab-qr">UPI QR</button>
+                <button class="payment-tab-btn" data-target="tab-upi">UPI ID</button>
+                <button class="payment-tab-btn" data-target="tab-card">Card</button>
+            </div>
+
+            <div id="tab-qr" class="payment-tab-content active">
+                <p style="font-size: 0.95rem; margin-bottom: 1.2rem;">Scan with any UPI app to pay <strong class="payment-amount-display" style="color: var(--neon-purple); font-size: 1.2rem;"></strong></p>
+                <div class="qr-container" id="qr-scan-container">
+                    <div id="qr-scanner-line" class="qr-scanner-line"></div>
+                    <img src="qrcode.jpg" alt="UPI QR Code">
+                    <div id="qr-scan-overlay">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 10px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        <span>Scanned!</span>
+                    </div>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; font-weight: 500;">Waiting for payment confirmation...</p>
+                <button id="pay-btn-qr" class="read-btn action-buy execute-payment-btn" style="padding: 0.8rem;" disabled>Complete Order</button>
+            </div>
+
+            <div id="tab-upi" class="payment-tab-content">
+                <p style="font-size: 0.95rem; margin-bottom: 1.2rem;">Enter your UPI ID to pay <strong class="payment-amount-display" style="color: var(--neon-purple); font-size: 1.2rem;"></strong></p>
+                <input type="text" id="upi-id-input" class="payment-input" placeholder="e.g. yourname@okhdfc">
+                <button id="pay-btn-upi" class="read-btn action-buy execute-payment-btn" style="padding: 0.8rem;" disabled>Verify & Pay</button>
+            </div>
+
+            <div id="tab-card" class="payment-tab-content">
+                <p style="font-size: 0.95rem; margin-bottom: 1.2rem;">Enter card details to pay <strong class="payment-amount-display" style="color: var(--neon-purple); font-size: 1.2rem;"></strong></p>
+                <input type="text" id="card-number-input" class="payment-input" placeholder="Card Number (e.g. 4111 1111...)">
+                <div class="card-row">
+                    <input type="text" id="card-expiry-input" class="payment-input" placeholder="MM/YY">
+                    <input type="password" id="card-cvv-input" class="payment-input" placeholder="CVV (e.g. 123)">
+                </div>
+                <input type="text" id="card-name-input" class="payment-input" placeholder="Name on Card">
+                <button id="pay-btn-card" class="read-btn action-buy execute-payment-btn" style="padding: 0.8rem;" disabled>Pay Securely</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="success-modal" class="modal-overlay">
+        <div class="info-container">
+            <button id="close-success" class="close-modal-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div style="font-size: 3.5rem; margin-bottom: 0.5rem; animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">🎉</div>
+            <style>@keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }</style>
+            <h3>Success!</h3>
+            <p style="font-size: 0.95rem;">You have successfully <span id="success-action-type" style="font-weight: 800; color: var(--neon-purple);">purchased/rented items</span>. <br><br><strong id="success-book-title" style="color: var(--text-main);"></strong></p>
+            <button id="success-ok-btn" class="read-btn action-read" style="margin-top: 1.2rem; padding: 0.8rem;">Go to My Library</button>
+        </div>
+    </div>
+
+    <div id="reader-modal" class="modal-overlay">
+        <div class="reader-container" id="reader-container">
+            
+            <div id="reader-toc-panel" class="reader-sidebar">
+                <div class="toc-header">
+                    <span>Chapters</span>
+                    <button id="close-toc-btn" class="close-modal-btn" style="position:relative; top:auto; right:auto; width:28px; height:28px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <ul id="toc-list" class="toc-list">
+                    </ul>
+            </div>
+
+            <div id="reader-settings-panel" class="reader-settings-dropdown">
+                <div class="setting-group">
+                    <div class="setting-label">Theme</div>
+                    <div class="setting-options">
+                        <button class="setting-opt-btn active" data-theme="light">Light</button>
+                        <button class="setting-opt-btn" data-theme="sepia">Sepia</button>
+                        <button class="setting-opt-btn" data-theme="dark">Dark</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <div class="setting-label">Font Style</div>
+                    <div class="setting-options">
+                        <button class="setting-opt-btn active" data-font="serif">Serif</button>
+                        <button class="setting-opt-btn" data-font="sans">Sans</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <div class="setting-label">Line Spacing</div>
+                    <div class="setting-options">
+                        <button class="setting-opt-btn" data-spacing="tight">Tight</button>
+                        <button class="setting-opt-btn active" data-spacing="normal">Normal</button>
+                        <button class="setting-opt-btn" data-spacing="loose">Loose</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reader-header">
+                <div style="flex:1; display:flex; align-items:center; gap:12px;">
+                    <button id="toggle-toc-btn" class="icon-btn" style="width: 32px; height: 32px;" title="Table of Contents">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div style="display:flex; flex-direction:column; justify-content:center;">
+                        <h3 id="reader-title" style="margin:0; font-family: var(--font-ui); font-size: 1.05rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">Reading</h3>
+                        <span id="reader-author" style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500;"></span>
+                    </div>
+                </div>
+                
+                <div class="zoom-container" style="flex:1; display:flex; justify-content:center; align-items:center; gap:10px;">
+                    <span style="font-size: 0.75rem; color:var(--text-muted); font-weight:700;">A-</span>
+                    <input type="range" id="zoom-slider" min="0.8" max="1.5" step="0.05" value="0.95" class="zoom-slider" title="Zoom In/Out">
+                    <span style="font-size: 1rem; color:var(--text-main); font-weight:800;">A+</span>
+                </div>
+                
+                <div style="flex:1; display:flex; justify-content:flex-end; gap:8px;">
+                    <button id="toggle-tts-btn" class="icon-btn" style="width: 32px; height: 32px;" title="Read Aloud">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="tts-icon-svg">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                    </button>
+                    <button id="open-reader-settings-btn" class="icon-btn" style="width: 32px; height: 32px;" title="Reader Settings">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line>
+                        </svg>
+                    </button>
+                    <button id="close-reader" class="close-modal-btn" style="position:relative; top:auto; right:auto; width:32px; height:32px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="book-spread" class="book-spread">
+                <div class="book-spine"></div>
+                <div id="left-page" class="page left-page"><div id="left-page-text" class="reader-text"></div></div>
+                <div id="right-page" class="page right-page"><div id="right-page-text" class="reader-text"></div></div>
+            </div>
+            
+            <div class="reader-footer">
+                <button id="prev-btn" class="page-btn small-btn">← Prev</button>
+                
+                <div class="page-center" style="display:flex; align-items:center;">
+                    <div style="font-weight:700; color:var(--text-main); font-size:0.85rem;">
+                        Page <span id="current-page-display" style="color:var(--neon-purple); font-weight: 800;">1</span> <span id="page-total">of 1</span>
+                    </div>
+                    
+                    <div class="jump-container" style="display:flex; align-items:center; gap:6px; margin-left: 12px; padding-left: 12px; border-left: 1px solid var(--glass-border);">
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:800;">GO TO:</span>
+                        <input type="number" id="page-input" class="page-input" placeholder="#">
+                        <button id="go-to-page-btn" style="background: var(--neon-purple); color: white; border: none; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 6px var(--accent-glow); transition: transform 0.2s ease;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <button id="next-btn" class="page-btn small-btn">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "/api";
+        
+        let rawUser = localStorage.getItem('user');
+        let currentUser = null;
+        if (rawUser) {
+            currentUser = JSON.parse(rawUser);
+            if (!currentUser.favorites) currentUser.favorites = [];
+            if (!currentUser.wishlist) currentUser.wishlist = []; // INIT WISHLIST
+        }
+        
+        let books = [];
+        let currentFilter = "All";
+        let showMyLibrary = false;
+        let showFavorites = false;
+        let showWishlist = false; // WISHLIST FILTER
+        
+        let cart = JSON.parse(localStorage.getItem('virtushelf_cart')) || [];
+
+        // --- NEW: TOAST NOTIFICATION SYSTEM ---
+        let toastTimeout;
+        function showToast(msg, btnText = null, onConfirm = null) {
+            const toast = document.getElementById('app-toast');
+            const msgEl = document.getElementById('toast-msg');
+            const actionContainer = document.getElementById('toast-actions');
+            const yesBtn = document.getElementById('toast-btn-yes');
+            const noBtn = document.getElementById('toast-btn-no');
+
+            msgEl.textContent = msg;
+            
+            clearTimeout(toastTimeout);
+
+            if (btnText && onConfirm) {
+                actionContainer.style.display = 'flex';
+                yesBtn.textContent = btnText;
+                yesBtn.onclick = () => { onConfirm(); toast.classList.remove('show'); };
+                noBtn.onclick = () => { toast.classList.remove('show'); };
+            } else {
+                actionContainer.style.display = 'none';
+                toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+
+            toast.classList.add('show');
+        }
+
+        function updateCartBadge() {
+            const badge = document.getElementById('cart-badge');
+            badge.textContent = cart.length;
+            badge.style.display = cart.length > 0 ? 'flex' : 'none';
+            localStorage.setItem('virtushelf_cart', JSON.stringify(cart));
+        }
+
+        updateCartBadge();
+
+        function getLibraryItem(bookTitle) {
+            if (!currentUser || !currentUser.library) return null;
+            for (let item of currentUser.library) {
+                if (typeof item === 'string' && item === bookTitle) {
+                    return { title: item, type: 'buy' };
+                } else if (item && item.title === bookTitle) {
+                    return item;
+                }
+            }
+            return null;
+        }
+
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsModal = document.getElementById('settings-modal');
+        const closeSettingsBtn = document.getElementById('close-settings');
+        const themeSwitch = document.getElementById('theme-switch');
+
+        settingsBtn.addEventListener('click', () => settingsModal.classList.add('active'));
+        closeSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('active'));
+
+        themeSwitch.addEventListener('change', () => {
+            if (themeSwitch.checked) {
+                document.body.classList.add('dark-theme');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-theme');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeSwitch.checked = true;
+        }
+
+        const authModal = document.getElementById('auth-modal');
+        const profileModal = document.getElementById('profile-modal');
+        const cartModal = document.getElementById('cart-modal');
+        const paymentModal = document.getElementById('payment-modal'); 
+        const successModal = document.getElementById('success-modal');
+        const readerModal = document.getElementById('reader-modal');
+        const bookInfoModal = document.getElementById('book-info-modal');
+        
+        const authBtn = document.getElementById('auth-btn');
+        const closeAuthBtn = document.getElementById('close-auth');
+        const closeProfileBtn = document.getElementById('close-profile');
+        const logoutBtn = document.getElementById('logout-btn');
+        const cartBtn = document.getElementById('cart-btn');
+        const closeCartBtn = document.getElementById('close-cart');
+        const closePaymentBtn = document.getElementById('close-payment');
+        const verifyPaymentBtn = document.getElementById('verify-payment-btn');
+        const closeSuccessBtn = document.getElementById('close-success');
+        const successOkBtn = document.getElementById('success-ok-btn');
+        const closeReaderBtn = document.getElementById('close-reader');
+        const closeBookInfoBtn = document.getElementById('close-book-info');
+        const authMessage = document.getElementById('auth-message'); 
+
+        closeBookInfoBtn.addEventListener('click', () => bookInfoModal.classList.remove('active'));
+
+        window.openCartModal = function() {
+            renderCartUI();
+            cartModal.classList.add('active');
+        };
+        
+        cartBtn.addEventListener('click', window.openCartModal);
+        
+        closeCartBtn.addEventListener('click', () => {
+            document.getElementById('cart-modal').classList.remove('active');
+        });
+
+        authBtn.addEventListener('click', () => {
+            if (currentUser) {
+                document.getElementById('profile-username').textContent = currentUser.username;
+                let purchasedCount = 0; let rentedCount = 0; let totalValue = 0; let genreCounts = {};
+                if (currentUser.library && currentUser.library.length > 0 && books.length > 0) {
+                    currentUser.library.forEach(rawItem => {
+                        let item = typeof rawItem === 'string' ? { title: rawItem, type: 'buy' } : rawItem;
+                        const book = books.find(b => b.title === item.title);
+                        if (book) {
+                            if (item.type === 'rent') { rentedCount++; totalValue += book.rentPrice; } 
+                            else { purchasedCount++; totalValue += book.price; }
+                            genreCounts[book.category] = (genreCounts[book.category] || 0) + 1;
+                        }
+                    });
+                }
+                document.getElementById('profile-purchased-count').textContent = purchasedCount;
+                document.getElementById('profile-rented-count').textContent = rentedCount;
+                document.getElementById('profile-collection-value').textContent = `₹${totalValue.toFixed(0)}`;
+                let topGenre = "Just Started"; let maxCount = 0;
+                for (const [genre, count] of Object.entries(genreCounts)) {
+                    if (count > maxCount) { maxCount = count; topGenre = genre; }
+                }
+                document.getElementById('profile-favorite-genre').textContent = topGenre;
+                profileModal.classList.add('active');
+            } else {
+                document.getElementById('username').value = "";
+                document.getElementById('password').value = "";
+                authMessage.textContent = "";
+                authModal.classList.add('active');
+            }
+        });
+
+        closeAuthBtn.addEventListener('click', () => authModal.classList.remove('active'));
+        closeProfileBtn.addEventListener('click', () => profileModal.classList.remove('active'));
+        
+        logoutBtn.addEventListener('click', () => {
+            currentUser = null;
+            localStorage.removeItem('user');
+            profileModal.classList.remove('active');
+            updateUserUI();
+            document.querySelector('[data-category="All"]').click();
+            showToast("Successfully logged out.");
+        });
+
+        closePaymentBtn.addEventListener('click', () => paymentModal.classList.remove('active'));
+        closeSuccessBtn.addEventListener('click', () => successModal.classList.remove('active'));
+
+        successOkBtn.addEventListener('click', () => {
+            successModal.classList.remove('active');
+            document.getElementById('my-library-btn').click(); 
+        });
+
+        const authForm = document.getElementById('auth-form');
+        const authTitle = document.getElementById('auth-title');
+        const authDesc = document.getElementById('auth-desc');
+        const authSubmit = document.getElementById('auth-submit');
+        const authSwitchLink = document.getElementById('auth-switch-link');
+        let isRegisterMode = false;
+
+        authSwitchLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            isRegisterMode = !isRegisterMode;
+            authTitle.textContent = isRegisterMode ? "Create Account" : "Welcome Back";
+            authDesc.textContent = isRegisterMode ? "Join our community of readers." : "Login to access your personal library.";
+            authSubmit.textContent = isRegisterMode ? "Register" : "Login";
+            document.getElementById('auth-switch-text').textContent = isRegisterMode ? "Already have an account?" : "Don't have an account?";
+            authSwitchLink.textContent = isRegisterMode ? "Login Now" : "Register Now";
+            authMessage.textContent = ""; 
+        });
+
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const endpoint = isRegisterMode ? "/register" : "/login";
+
+            authMessage.style.color = "var(--text-muted)";
+            authMessage.textContent = "Processing...";
+
+            try {
+                const res = await fetch(API_BASE + endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    if (isRegisterMode) {
+                        authMessage.style.color = "var(--success-color)";
+                        authMessage.textContent = "Registration successful! Please login.";
+                        setTimeout(() => { authSwitchLink.click(); }, 2000);
+                    } else {
+                        currentUser = { 
+                            username: data.username, 
+                            library: data.library,
+                            favorites: data.favorites || [],
+                            wishlist: data.wishlist || [] // Load wishlist
+                        };
+                        localStorage.setItem('user', JSON.stringify(currentUser));
+                        authModal.classList.remove('active');
+                        authMessage.textContent = "";
+                        document.getElementById('username').value = "";
+                        document.getElementById('password').value = "";
+                        updateUserUI();
+                        renderBooks();
+                        showToast(`Welcome back, ${currentUser.username}!`);
+                    }
+                } else { 
+                    authMessage.style.color = "var(--neon-pink)";
+                    authMessage.textContent = data.error || "An error occurred.";
+                }
+            } catch (err) { 
+                authMessage.style.color = "var(--neon-pink)";
+                authMessage.textContent = "Server connection failed."; 
+            }
+        });
+
+        function updateUserUI() {
+            const status = document.getElementById('user-status');
+            status.textContent = currentUser ? `Hi, ${currentUser.username}` : "";
+            authBtn.title = currentUser ? "Profile Dashboard" : "Login / Register";
+        }
+
+        async function fetchBooks() {
+            try {
+                const res = await fetch(`${API_BASE}/books`);
+                const fetchedBooks = await res.json();
+                
+                fetchedBooks.forEach(b => {
+                    if (b.title === 'Frankenstein' && b.img.includes('14352882')) {
+                        b.img = 'https://covers.openlibrary.org/b/isbn/9780486282114-L.jpg';
+                    }
+                });
+
+                // FIXED: Placed Coming Soon / Sold Out books at the very front of the list
+                const specialBooks = [
+                    {
+                        title: "The Winds of Winter",
+                        author: "George R. R. Martin",
+                        category: "Sci-Fi & Fantasy",
+                        img: "https://covers.openlibrary.org/b/id/12648455-L.jpg",
+                        price: 699,
+                        rentPrice: 199,
+                        status: "coming_soon"
+                    },
+                    {
+                        title: "Cyberpunk 2077: No Coincidence",
+                        author: "Rafał Kosik",
+                        category: "Sci-Fi & Fantasy",
+                        img: "https://covers.openlibrary.org/b/id/14441581-L.jpg",
+                        price: 499,
+                        rentPrice: 149,
+                        status: "coming_soon"
+                    },
+                    {
+                        title: "First Edition Classics Collection",
+                        author: "Various Authors",
+                        category: "Science & History",
+                        img: "https://covers.openlibrary.org/b/id/8259441-L.jpg",
+                        price: 1299,
+                        rentPrice: 399,
+                        status: "sold_out"
+                    }
+                ];
+
+                books = [...specialBooks, ...fetchedBooks];
+                
+                renderBooks();
+            } catch (err) { console.error("Failed to fetch books"); }
+        }
+        
+        window.toggleFavorite = async (event, title) => {
+            event.stopPropagation(); 
+            if (!currentUser) { authModal.classList.add('active'); return; }
+
+            if (!currentUser.favorites) currentUser.favorites = [];
+            let isFav = currentUser.favorites.includes(title);
+            
+            isFav = !isFav;
+            if (isFav) {
+                currentUser.favorites.push(title);
+                showToast("Added to Favorites ❤️");
+            } else {
+                currentUser.favorites = currentUser.favorites.filter(f => f !== title);
+                showToast("Removed from Favorites"); 
+            }
+            
+            localStorage.setItem('user', JSON.stringify(currentUser));
+
+            document.querySelectorAll(`.heart-btn[data-book="${title.replace(/"/g, '\\"')}"]`).forEach(btn => {
+                if (isFav) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            if (showFavorites && !isFav) {
+                const card = event.currentTarget.closest('.book-card');
+                if (card) {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(15px) translateZ(0)';
+                    setTimeout(() => card.style.display = 'none', 300);
+                }
+            }
+
+            try {
+                await fetch(`${API_BASE}/favorite`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: currentUser.username, title })
+                });
+            } catch (err) { console.error("Failed to sync favorites with server."); }
+        };
+
+        // NEW: Wishlist Toggle function
+        window.toggleWishlist = async (event, title) => {
+            event.stopPropagation(); 
+            if (!currentUser) { authModal.classList.add('active'); return; }
+
+            if (!currentUser.wishlist) currentUser.wishlist = [];
+            let isW = currentUser.wishlist.includes(title);
+            
+            isW = !isW;
+            if (isW) {
+                currentUser.wishlist.push(title);
+                showToast("Added to Wishlist 🔖");
+            } else {
+                currentUser.wishlist = currentUser.wishlist.filter(w => w !== title);
+                showToast("Removed from Wishlist");
+            }
+            
+            localStorage.setItem('user', JSON.stringify(currentUser));
+
+            document.querySelectorAll(`.wishlist-icon-btn[data-book="${title.replace(/"/g, '\\"')}"]`).forEach(btn => {
+                if (isW) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            if (showWishlist && !isW) {
+                const card = event.currentTarget.closest('.book-card');
+                if (card) {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(15px) translateZ(0)';
+                    setTimeout(() => card.style.display = 'none', 300);
+                }
+            }
+        };
+
+        function updateCardButtons(title) {
+            const safeTitle = title.replace(/'/g, "\\'");
+            const isOwned = getLibraryItem(title) !== null;
+            const inCartItem = cart.find(i => i.title === title);
+            const book = books.find(b => b.title === title);
+            if(!book) return;
+
+            let actionBtn = '';
+            
+            if (isOwned) {
+                const libraryItem = getLibraryItem(title);
+                if (libraryItem.type === 'rent') {
+                    actionBtn = `<button class="read-btn action-read-rented" onclick="event.stopPropagation(); openReader('${safeTitle}')">Read Now</button>`;
+                } else {
+                    actionBtn = `<button class="read-btn action-read" onclick="event.stopPropagation(); openReader('${safeTitle}')">Read Now</button>`;
+                }
+            } else if (book.status === 'coming_soon') {
+                actionBtn = `<button class="read-btn" disabled style="background:var(--bg-surface); color:var(--text-muted); border:1px solid var(--glass-border); cursor:not-allowed;">Coming Soon</button>`;
+            } else if (book.status === 'sold_out') {
+                actionBtn = `<button class="read-btn" disabled style="background:rgba(244, 63, 94, 0.1); color:var(--neon-pink); border:1px solid var(--neon-pink); cursor:not-allowed;">Sold Out</button>`;
+            } else if (inCartItem) {
+                actionBtn = `
+                    <button class="read-btn action-in-cart" style="width: 100%; cursor: pointer;" onclick="event.stopPropagation(); window.openCartModal();">In Cart (${inCartItem.type.toUpperCase()})</button>
+                    <button class="read-btn action-logout" style="padding: 0.7rem; margin-top: 0.6rem; width: 100%;" onclick="removeFromCart(event, '${safeTitle}')">Remove</button>
+                `;
+            } else {
+                actionBtn = `
+                    <button class="read-btn action-buy" onclick="addToCart(event, '${safeTitle}', 'buy', ${book.price}, '${book.img}')">Buy ₹${book.price}</button>
+                    <button class="read-btn action-rent" onclick="addToCart(event, '${safeTitle}', 'rent', ${book.rentPrice}, '${book.img}')">Rent ₹${book.rentPrice}</button>
+                `;
+            }
+            
+            document.querySelectorAll(`.book-card[data-title="${safeTitle}"] .btn-group`).forEach(group => {
+                group.innerHTML = actionBtn;
+            });
+        }
+
+        window.addToCart = (event, title, type, price, img) => {
+            if(event) { event.preventDefault(); event.stopPropagation(); }
+            if (!currentUser) { authModal.classList.add('active'); return; }
+            if (cart.some(item => item.title === title)) return;
+            
+            cart.push({ title, type, price, img });
+            updateCartBadge();
+            updateCardButtons(title);
+            
+            if (bookInfoModal.classList.contains('active')) { openBookInfo(title); }
+        };
+
+        window.removeFromCart = (event, title) => {
+            if(event) { event.preventDefault(); event.stopPropagation(); }
+            cart = cart.filter(item => item.title !== title);
+            updateCartBadge();
+            updateCardButtons(title);
+            
+            if(document.getElementById('cart-modal').classList.contains('active')) renderCartUI();
+            if (bookInfoModal.classList.contains('active')) openBookInfo(title); 
+        };
+
+        window.openBookInfo = (title) => {
+            const book = books.find(b => b.title === title);
+            if (!book) return;
+            
+            const libraryItem = getLibraryItem(book.title);
+            const isOwned = libraryItem !== null;
+            const isFav = currentUser && currentUser.favorites && currentUser.favorites.includes(book.title);
+            const isW = currentUser && currentUser.wishlist && currentUser.wishlist.includes(book.title);
+            const safeTitle = book.title.replace(/'/g, "\\'");
+
+            document.getElementById('detail-cover').src = book.img;
+            document.getElementById('detail-title').textContent = book.title;
+            document.getElementById('detail-author').textContent = `by ${book.author}`;
+            document.getElementById('detail-badge').textContent = book.category;
+            
+            const heartBtn = document.getElementById('detail-heart-btn');
+            heartBtn.className = isFav ? 'heart-btn active' : 'heart-btn';
+            heartBtn.setAttribute('data-book', safeTitle);
+            heartBtn.onclick = (e) => toggleFavorite(e, safeTitle);
+
+            const wishBtn = document.getElementById('detail-wishlist-btn');
+            wishBtn.className = isW ? 'wishlist-icon-btn active' : 'wishlist-icon-btn';
+            wishBtn.setAttribute('data-book', safeTitle);
+            wishBtn.onclick = (e) => toggleWishlist(e, safeTitle);
+            
+            const actionsContainer = document.getElementById('detail-actions');
+            const inCartItem = cart.find(i => i.title === book.title);
+            
+            if (isOwned) {
+                let btnClass = libraryItem.type === 'rent' ? 'action-read-rented' : 'action-read';
+                actionsContainer.innerHTML = `<button class="read-btn ${btnClass}" onclick="openReader('${safeTitle}')" style="width: 100%; padding: 1.2rem; font-size: 1.1rem;">Read Now</button>`;
+            } else if (book.status === 'coming_soon') {
+                actionsContainer.innerHTML = `<button class="read-btn" disabled style="width: 100%; padding: 1.2rem; font-size: 1.1rem; background:var(--bg-surface); color:var(--text-muted); border:1px solid var(--glass-border); cursor:not-allowed;">Coming Soon</button>`;
+            } else if (book.status === 'sold_out') {
+                actionsContainer.innerHTML = `<button class="read-btn" disabled style="width: 100%; padding: 1.2rem; font-size: 1.1rem; background:rgba(244, 63, 94, 0.1); color:var(--neon-pink); border:1px solid var(--neon-pink); cursor:not-allowed;">Sold Out</button>`;
+            } else if (inCartItem) {
+                actionsContainer.innerHTML = `
+                    <button class="read-btn action-in-cart" style="flex: 1; padding: 1.2rem; font-size: 1.1rem; cursor: pointer;" onclick="window.openCartModal();">In Cart (${inCartItem.type.toUpperCase()})</button>
+                    <button class="read-btn action-logout" style="padding: 1.2rem; font-size: 1.1rem; flex: 0.5;" onclick="removeFromCart(event, '${safeTitle}')">Remove</button>
+                `;
+            } else {
+                actionsContainer.innerHTML = `
+                    <button class="read-btn action-buy" onclick="addToCart(event, '${safeTitle}', 'buy', ${book.price}, '${book.img}')" style="flex: 1; padding: 1.2rem; font-size: 1.1rem;">Add to Cart ₹${book.price}</button>
+                    <button class="read-btn action-rent" onclick="addToCart(event, '${safeTitle}', 'rent', ${book.rentPrice}, '${book.img}')" style="flex: 1; padding: 1.2rem; font-size: 1.1rem;">Rent ₹${book.rentPrice}</button>
+                `;
+            }
+            
+            bookInfoModal.classList.add('active');
+        };
+
+        function renderBooks() {
+            const shelf = document.getElementById('bookshelf');
+            shelf.innerHTML = "";
+            
+            const filtered = books.filter(b => {
+                const matchesCategory = currentFilter === "All" || b.category === currentFilter;
+                const isOwned = getLibraryItem(b.title) !== null;
+                const isFav = currentUser && currentUser.favorites && currentUser.favorites.includes(b.title);
+                const isW = currentUser && currentUser.wishlist && currentUser.wishlist.includes(b.title);
+                
+                if (showMyLibrary) return isOwned;
+                if (showFavorites) return isFav;
+                if (showWishlist) return isW;
+                return matchesCategory;
+            });
+
+            const fragment = document.createDocumentFragment();
+
+            filtered.forEach((book, index) => {
+                const libraryItem = getLibraryItem(book.title);
+                const isOwned = libraryItem !== null;
+                const isFav = currentUser && currentUser.favorites && currentUser.favorites.includes(book.title);
+                const isW = currentUser && currentUser.wishlist && currentUser.wishlist.includes(book.title);
+                const safeTitle = book.title.replace(/'/g, "\\'");
+                const inCartItem = cart.find(i => i.title === book.title);
+                
+                const heartClass = isFav ? 'heart-btn active' : 'heart-btn';
+                const wishClass = isW ? 'wishlist-icon-btn active' : 'wishlist-icon-btn';
+                
+                let accessBadge = '';
+                let actionBtn = '';
+                
+                if (isOwned) {
+                    if (libraryItem.type === 'rent') {
+                        accessBadge = `<div class="badge badge-rented">RENTED</div>`;
+                        actionBtn = `<button class="read-btn action-read-rented" onclick="event.stopPropagation(); openReader('${safeTitle}')">Read Now</button>`;
+                    } else {
+                        accessBadge = `<div class="badge badge-purchased">PURCHASED</div>`;
+                        actionBtn = `<button class="read-btn action-read" onclick="event.stopPropagation(); openReader('${safeTitle}')">Read Now</button>`;
+                    }
+                } else if (book.status === 'coming_soon') {
+                    accessBadge = `<div class="badge badge-coming">COMING SOON</div>`;
+                    actionBtn = `<button class="read-btn" disabled style="background:var(--bg-surface); color:var(--text-muted); border:1px solid var(--glass-border); cursor:not-allowed;">Coming Soon</button>`;
+                } else if (book.status === 'sold_out') {
+                    accessBadge = `<div class="badge badge-soldout">SOLD OUT</div>`;
+                    actionBtn = `<button class="read-btn" disabled style="background:rgba(244, 63, 94, 0.1); color:var(--neon-pink); border:1px solid var(--neon-pink); cursor:not-allowed;">Sold Out</button>`;
+                } else if (inCartItem) {
+                    actionBtn = `
+                        <button class="read-btn action-in-cart" style="width: 100%; cursor: pointer;" onclick="event.stopPropagation(); window.openCartModal();">In Cart (${inCartItem.type.toUpperCase()})</button>
+                        <button class="read-btn action-logout" style="padding: 0.7rem; margin-top: 0.6rem; width: 100%;" onclick="removeFromCart(event, '${safeTitle}')">Remove</button>
+                    `;
+                } else {
+                    actionBtn = `
+                        <button class="read-btn action-buy" onclick="addToCart(event, '${safeTitle}', 'buy', ${book.price}, '${book.img}')">Buy ₹${book.price}</button>
+                        <button class="read-btn action-rent" onclick="addToCart(event, '${safeTitle}', 'rent', ${book.rentPrice}, '${book.img}')">Rent ₹${book.rentPrice}</button>
+                    `;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.setAttribute('data-title', safeTitle); 
+                card.innerHTML = `
+                    <div class="book-cover-container" onclick="openBookInfo('${safeTitle}')">
+                        <button class="${heartClass}" data-book="${safeTitle}" onclick="toggleFavorite(event, '${safeTitle}')" title="Add to Favorites">
+                            <svg class="heart-icon" viewBox="0 0 24 24">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </button>
+                        <button class="${wishClass}" data-book="${safeTitle}" onclick="toggleWishlist(event, '${safeTitle}')" title="Add to Wishlist">
+                            <svg class="wishlist-icon"><use href="#icon-bookmark"></use></svg>
+                        </button>
+                        
+                        <div class="cover-hover-overlay">VIEW DETAILS</div>
+                        <div class="badge badge-category">${book.category}</div>
+                        ${accessBadge}
+                        <img src="${book.img}" loading="lazy" decoding="async" class="book-cover" alt="${book.title}"> 
+                    </div>
+                    <div class="book-info">
+                        <h3 class="book-title">${book.title}</h3>
+                        <p class="book-author">by ${book.author}</p>
+                        <div class="btn-group">
+                            ${actionBtn}
+                        </div>
+                    </div>
+                `;
+                fragment.appendChild(card);
+                setTimeout(() => card.classList.add('visible'), index * 30);
+            });
+            
+            shelf.appendChild(fragment);
+        }
+
+        const searchInput = document.getElementById('search-input');
+        const clearBtn = document.getElementById('clear-btn');
+        let searchTimeout;
+
+        function executeSearch() {
+            const term = searchInput.value.toLowerCase();
+            document.querySelectorAll('.book-card').forEach(card => {
+                const title = card.querySelector('.book-title').textContent.toLowerCase();
+                const author = card.querySelector('.book-author').textContent.toLowerCase();
+                card.style.display = (title.includes(term) || author.includes(term)) ? "flex" : "none";
+            });
+            clearBtn.style.display = term.length > 0 ? "flex" : "none";
+        }
+
+        /* SAFE DEBOUNCE FOR PERFORMANCE */
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(executeSearch, 150); 
+        });
+        
+        clearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            executeSearch(); 
+            searchInput.focus(); 
+        });
+
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                showMyLibrary = btn.id === 'my-library-btn';
+                showFavorites = btn.id === 'my-favorites-btn';
+                showWishlist = btn.id === 'my-wishlist-btn'; // FILTER
+                currentFilter = btn.dataset.category || "All";
+                renderBooks();
+            });
+        });
+
+        function renderCartUI() {
+            const container = document.getElementById('cart-items-container');
+            const totalEl = document.getElementById('cart-total-price');
+            const countEl = document.getElementById('cart-count-text');
+            const checkoutBtn = document.getElementById('cart-checkout-btn');
+            
+            container.innerHTML = '';
+            let total = 0;
+            countEl.textContent = cart.length;
+            
+            if (cart.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding: 3rem 0; color: var(--text-muted);">Your cart is empty.<br><svg style="margin-top:20px; opacity:0.3; width:60px; height:60px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></div>';
+                checkoutBtn.disabled = true;
+                checkoutBtn.style.opacity = '0.5';
+                totalEl.textContent = '0';
+                return;
+            }
+            
+            checkoutBtn.disabled = false;
+            checkoutBtn.style.opacity = '1';
+            
+            cart.forEach(item => {
+                total += item.price;
+                const safeTitle = item.title.replace(/'/g, "\\'");
+                container.innerHTML += `
+                    <div class="cart-item">
+                        <img src="${item.img}" alt="${item.title}">
+                        <div class="cart-item-details">
+                            <h4 class="cart-item-title">${item.title}</h4>
+                            <div class="cart-item-type" style="color: ${item.type === 'buy' ? 'var(--success-color)' : '#FF8C00'};">${item.type === 'buy' ? 'Purchase Lifetime' : 'Rent 30 Days'}</div>
+                            <div class="cart-item-price">₹${item.price}</div>
+                        </div>
+                        <button class="remove-cart-item-btn" onclick="removeFromCart(event, '${safeTitle}')" title="Remove">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            totalEl.textContent = total;
+        }
+
+        document.getElementById('clear-cart-btn').addEventListener('click', () => {
+            const oldCart = [...cart];
+            cart = [];
+            updateCartBadge();
+            renderCartUI();
+            oldCart.forEach(item => updateCardButtons(item.title));
+        });
+
+        let qrScanTimeout;
+
+        document.getElementById('cart-checkout-btn').addEventListener('click', () => {
+            const cartModal = document.getElementById('cart-modal');
+            const authModal = document.getElementById('auth-modal');
+            const paymentModal = document.getElementById('payment-modal');
+
+            if (!currentUser) { cartModal.classList.remove('active'); authModal.classList.add('active'); return; }
+            cartModal.classList.remove('active');
+            
+            let amount = 0;
+            cart.forEach(item => amount += item.price);
+            
+            document.querySelectorAll('.payment-amount-display').forEach(el => {
+                el.textContent = `₹${amount}`;
+            });
+            
+            // RESET VALIDATION STATES
+            clearTimeout(qrScanTimeout);
+            document.getElementById('qr-scanner-line').style.display = 'block';
+            document.getElementById('qr-scan-overlay').style.display = 'none';
+            document.getElementById('pay-btn-qr').disabled = true;
+            
+            document.getElementById('upi-id-input').value = '';
+            document.getElementById('pay-btn-upi').disabled = true;
+            
+            document.getElementById('card-number-input').value = '';
+            document.getElementById('card-expiry-input').value = '';
+            document.getElementById('card-cvv-input').value = '';
+            document.getElementById('card-name-input').value = '';
+            document.getElementById('pay-btn-card').disabled = true;
+            
+            document.querySelectorAll('.payment-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.payment-tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('[data-target="tab-qr"]').classList.add('active');
+            document.getElementById('tab-qr').classList.add('active');
+
+            paymentModal.classList.add('active');
+
+            qrScanTimeout = setTimeout(() => {
+                document.getElementById('qr-scanner-line').style.display = 'none';
+                document.getElementById('qr-scan-overlay').style.display = 'flex';
+                document.getElementById('pay-btn-qr').disabled = false;
+            }, 7000); 
+        });
+
+        const paymentTabBtns = document.querySelectorAll('.payment-tab-btn');
+        const paymentTabContents = document.querySelectorAll('.payment-tab-content');
+
+        paymentTabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                paymentTabBtns.forEach(b => b.classList.remove('active'));
+                paymentTabContents.forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const targetId = btn.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+
+                if(targetId === 'tab-qr') {
+                    clearTimeout(qrScanTimeout);
+                    document.getElementById('qr-scanner-line').style.display = 'block';
+                    document.getElementById('qr-scan-overlay').style.display = 'none';
+                    document.getElementById('pay-btn-qr').disabled = true;
+                    
+                    qrScanTimeout = setTimeout(() => {
+                        document.getElementById('qr-scanner-line').style.display = 'none';
+                        document.getElementById('qr-scan-overlay').style.display = 'flex';
+                        document.getElementById('pay-btn-qr').disabled = false;
+                    }, 7000); 
+                }
+            });
+        });
+
+        const upiIdInput = document.getElementById('upi-id-input');
+        const payBtnUpi = document.getElementById('pay-btn-upi');
+
+        upiIdInput.addEventListener('input', () => {
+            const isValid = /^[\w.-]+@[\w.-]+$/.test(upiIdInput.value);
+            payBtnUpi.disabled = !isValid;
+        });
+
+        const cardNum = document.getElementById('card-number-input');
+        const cardExp = document.getElementById('card-expiry-input');
+        const cardCvv = document.getElementById('card-cvv-input');
+        const cardName = document.getElementById('card-name-input');
+        const payBtnCard = document.getElementById('pay-btn-card');
+
+        function validateCard() {
+            const isNumValid = /^[\d\s]{15,19}$/.test(cardNum.value.trim()); 
+            const isExpValid = /^(0[1-9]|1[0-2])\/?([0-9]{2})$/.test(cardExp.value.trim()); 
+            const isCvvValid = /^\d{3,4}$/.test(cardCvv.value.trim()); 
+            const isNameValid = cardName.value.trim().length > 0;
+            
+            payBtnCard.disabled = !(isNumValid && isExpValid && isCvvValid && isNameValid);
+        }
+
+        cardNum.addEventListener('input', validateCard);
+        cardExp.addEventListener('input', validateCard);
+        cardCvv.addEventListener('input', validateCard);
+        cardName.addEventListener('input', validateCard);
+
+        const executePaymentBtns = document.querySelectorAll('.execute-payment-btn');
+        
+        executePaymentBtns.forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const paymentModal = document.getElementById('payment-modal');
+                const successModal = document.getElementById('success-modal');
+
+                const originalText = this.textContent;
+                this.textContent = "Verifying...";
+                this.disabled = true;
+
+                setTimeout(async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/checkout`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                username: currentUser.username, 
+                                items: cart 
+                            })
+                        });
+                        const data = await res.json();
+                        
+                        if (res.ok) {
+                            currentUser.library = data.library;
+                            localStorage.setItem('user', JSON.stringify(currentUser));
+                            
+                            paymentModal.classList.remove('active');
+                            
+                            const numItems = cart.length;
+                            cart = [];
+                            updateCartBadge();
+                            
+                            renderBooks();
+                            
+                            document.getElementById('success-action-type').textContent = 'checked out';
+                            document.getElementById('success-book-title').textContent = `${numItems} items from your cart`;
+                            successModal.classList.add('active');
+                        } else {
+                            alert("Transaction processing failed on server.");
+                        }
+                    } catch (err) { 
+                        alert("Connection failed while verifying payment."); 
+                    } finally {
+                        this.textContent = originalText;
+                        this.disabled = false;
+                    }
+                }, 2500); 
+            });
+        });
+
+        let pages = [];
+        let chapters = [];
+        let currentIndex = 0;
+        let isAnimating = false;
+        let currentBookTitle = "";
+        let utterance = null;
+
+        const leftPageText = document.getElementById('left-page-text');
+        const rightPageText = document.getElementById('right-page-text');
+        const pageInput = document.getElementById('page-input');
+        const pageTotal = document.getElementById('page-total');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const bookSpread = document.getElementById('book-spread');
+        const readerContainer = document.getElementById('reader-container');
+        
+        const tocBtn = document.getElementById('toggle-toc-btn');
+        const tocPanel = document.getElementById('reader-toc-panel');
+        const closeTocBtn = document.getElementById('close-toc-btn');
+        const tocList = document.getElementById('toc-list');
+        
+        const settingsBtnReader = document.getElementById('open-reader-settings-btn');
+        const settingsPanel = document.getElementById('reader-settings-panel');
+        
+        const ttsBtn = document.getElementById('toggle-tts-btn');
+        const ttsIcon = document.getElementById('tts-icon-svg');
+
+        // --- LOAD READER SETTINGS ---
+        function loadReaderSettings() {
+            const rTheme = localStorage.getItem('virtushelf_reader_theme') || 'light';
+            const rFont = localStorage.getItem('virtushelf_reader_font') || 'serif';
+            const rSpacing = localStorage.getItem('virtushelf_reader_spacing') || 'normal';
+            const rZoom = localStorage.getItem('virtushelf_reader_zoom') || '1.05'; 
+
+            readerContainer.classList.remove('theme-light', 'theme-sepia', 'theme-dark', 'font-sans', 'font-serif', 'spacing-tight', 'spacing-normal', 'spacing-loose');
+            readerContainer.classList.add(`theme-${rTheme}`);
+            readerContainer.classList.add(`font-${rFont}`);
+            if (rSpacing !== 'normal') readerContainer.classList.add(`spacing-${rSpacing}`);
+
+            document.querySelectorAll('.setting-opt-btn').forEach(btn => {
+                if (btn.dataset.theme) btn.classList.toggle('active', btn.dataset.theme === rTheme);
+                if (btn.dataset.font) btn.classList.toggle('active', btn.dataset.font === rFont);
+                if (btn.dataset.spacing) btn.classList.toggle('active', btn.dataset.spacing === rSpacing);
+            });
+
+            const zoomSlider = document.getElementById('zoom-slider');
+            zoomSlider.value = rZoom;
+        }
+
+        loadReaderSettings();
+
+        // FIXED: Toggle the chapter panel instead of always adding it
+        tocBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            tocPanel.classList.toggle('active'); 
+            settingsPanel.classList.remove('active');
+        });
+
+        closeTocBtn.addEventListener('click', () => tocPanel.classList.remove('active'));
+
+        settingsBtnReader.addEventListener('click', (e) => {
+            e.stopPropagation();
+            settingsPanel.classList.toggle('active');
+            tocPanel.classList.remove('active');
+        });
+
+        // FIXED: Solid logic for closing modals when clicking the overlay specifically
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                // ONLY close if the click was exactly on the dark overlay background itself
+                if (e.target === this) {
+                    this.classList.remove('active');
+                    if (this.id === 'reader-modal') stopTTS();
+                }
+            });
+        });
+
+        // FIXED: Handled Reader Close button explicitly
+        document.getElementById('close-reader').addEventListener('click', () => {
+             document.getElementById('reader-modal').classList.remove('active');
+             stopTTS();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (settingsPanel.classList.contains('active') && !settingsPanel.contains(e.target) && !settingsBtnReader.contains(e.target)) {
+                settingsPanel.classList.remove('active');
+            }
+            if (tocPanel.classList.contains('active') && !tocPanel.contains(e.target) && !tocBtn.contains(e.target)) {
+                tocPanel.classList.remove('active');
+            }
+        });
+
+        document.querySelectorAll('.setting-opt-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const siblings = e.target.parentElement.querySelectorAll('.setting-opt-btn');
+                siblings.forEach(s => s.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                if(e.target.dataset.theme) {
+                    readerContainer.classList.remove('theme-light', 'theme-sepia', 'theme-dark');
+                    readerContainer.classList.add(`theme-${e.target.dataset.theme}`);
+                    localStorage.setItem('virtushelf_reader_theme', e.target.dataset.theme); // SAVE
+                }
+                if(e.target.dataset.font) {
+                    readerContainer.classList.remove('font-sans', 'font-serif');
+                    readerContainer.classList.add(`font-${e.target.dataset.font}`);
+                    localStorage.setItem('virtushelf_reader_font', e.target.dataset.font); // SAVE
+                }
+                if(e.target.dataset.spacing) {
+                    readerContainer.classList.remove('spacing-tight', 'spacing-normal', 'spacing-loose');
+                    if(e.target.dataset.spacing !== 'normal') readerContainer.classList.add(`spacing-${e.target.dataset.spacing}`);
+                    localStorage.setItem('virtushelf_reader_spacing', e.target.dataset.spacing); // SAVE
+                }
+            });
+        });
+
+        function stopTTS() {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                ttsIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+                ttsBtn.classList.remove('tts-active');
+            }
+        }
+
+        ttsBtn.addEventListener('click', () => {
+            if (speechSynthesis.speaking) {
+                stopTTS();
+            } else {
+                let textToRead = (pages[currentIndex] || '').replace(/<[^>]*>?/gm, '') + " " + (pages[currentIndex + 1] || '').replace(/<[^>]*>?/gm, '');
+                if(!textToRead.trim()) return;
+                
+                utterance = new SpeechSynthesisUtterance(textToRead);
+                speechSynthesis.speak(utterance);
+                
+                ttsIcon.innerHTML = '<rect x="6" y="6" width="12" height="12"></rect>';
+                ttsBtn.classList.add('tts-active');
+                
+                utterance.onend = stopTTS;
+                utterance.onerror = stopTTS;
+            }
+        });
+
+        const zoomSlider = document.getElementById('zoom-slider');
+        zoomSlider.addEventListener('input', (e) => {
+            const newSize = e.target.value + 'rem';
+            document.querySelectorAll('.reader-text').forEach(textContainer => {
+                textContainer.style.fontSize = newSize;
+            });
+            localStorage.setItem('virtushelf_reader_zoom', e.target.value); // SAVE
+        });
+
+        window.openReader = async (title) => {
+            document.getElementById('book-info-modal').classList.remove('active'); 
+            const readerModal = document.getElementById('reader-modal');
+            
+            const book = books.find(b => b.title === title);
+            currentBookTitle = title;
+            document.getElementById('reader-title').textContent = book.title;
+            document.getElementById('reader-author').textContent = `by ${book.author}`;
+            
+            leftPageText.innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
+                    <div class="spinner"></div>
+                    <div style="color:var(--text-muted); font-weight:600; font-size:1.1rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));">Loading book...</div>
+                </div>`;
+            rightPageText.innerHTML = '';
+            readerModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            tocPanel.classList.remove('active');
+            settingsPanel.classList.remove('active');
+            
+            stopTTS();
+            
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
+            try {
+                const res = await fetch(`${API_BASE}/read?url=${encodeURIComponent(book.fileUrl)}`);
+                if (!res.ok) throw new Error("Failed to load");
+                
+                const text = await res.text();
+                paginateAndParseChapters(text);
+                
+                // FIXED: Load and apply saved zoom setting instead of forcing 1.05
+                const currentZoom = localStorage.getItem('virtushelf_reader_zoom') || '1.05';
+                zoomSlider.value = currentZoom;
+                document.querySelectorAll('.reader-text').forEach(textContainer => {
+                    textContainer.style.fontSize = currentZoom + 'rem';
+                });
+                
+                const savedIndex = localStorage.getItem(`virtushelf_progress_${currentUser.username}_${title}`);
+                if (savedIndex && parseInt(savedIndex) > 0 && parseInt(savedIndex) < pages.length) {
+                    const targetPageDisplay = Math.floor(parseInt(savedIndex) / 2) + 1;
+                    showToast(`Resume reading from Page ${targetPageDisplay}?`, 'Resume', () => {
+                        currentIndex = parseInt(savedIndex);
+                        renderStaticPages();
+                    });
+                } else {
+                    currentIndex = 0;
+                }
+                
+                renderStaticPages();
+            } catch (err) { 
+                console.error("Book load error:", err);
+                
+                // FIXED: Fallback Preview System if Node backend is offline or rate-limited
+                showToast("Server unavailable: Loading sample preview.");
+                const fallbackText = "CHAPTER I. PREVIEW MODE\n\nWe could not fetch the full book content from the server. This often happens if the external library is rate-limiting your connection or the server is offline.\n\n" + "Here is some sample text to demonstrate the Liquid Glass reader functionality. ".repeat(150);
+                paginateAndParseChapters(fallbackText);
+                currentIndex = 0;
+                renderStaticPages();
+            }
+        };
+
+        function paginateAndParseChapters(text) {
+            const title = document.getElementById('reader-title').textContent;
+            const author = document.getElementById('reader-author').textContent;
+            pages = [`<div class="title-page-text"><h2>${title}</h2><h4>${author}</h4></div>`];
+            chapters = [];
+            
+            let cleanText = text.replace(/The Project Gutenberg eBook[\s\S]*?\*\*\* START OF THE PROJECT GUTENBERG EBOOK.*?\*\*\*/i, '');
+            
+            const paragraphs = cleanText.split(/\n\s*\n/); 
+            let currentContent = "";
+            
+            for (let i = 0; i < paragraphs.length; i++) {
+                let p = paragraphs[i].trim();
+                if (!p) continue;
+                
+                p = p.replace(/\n/g, ' '); 
+                
+                let plainTextP = p.replace(/<[^>]*>?/gm, '');
+                if (/^(CHAPTER|BOOK|PART)\s+[A-Z0-9IVXLCDM]+/i.test(plainTextP) && plainTextP.length < 80) {
+                    chapters.push({ title: plainTextP, index: pages.length + (currentContent.length > 0 ? 1 : 0) });
+                    currentContent += `<h3 style="margin-top:2rem; font-family:var(--font-ui); color:var(--neon-purple);">${p}</h3>`;
+                } else {
+                    currentContent += `<p>${p}</p>`;
+                }
+                
+                if (currentContent.length > 1500) { 
+                    pages.push(currentContent); 
+                    currentContent = ""; 
+                }
+            }
+            if (currentContent) pages.push(currentContent);
+            
+            tocList.innerHTML = '';
+            if(chapters.length === 0) {
+                tocList.innerHTML = '<li style="color:var(--text-muted); font-size:0.85rem; padding:1rem;">No chapters detected.</li>';
+            } else {
+                chapters.forEach(ch => {
+                    let li = document.createElement('li');
+                    li.className = 'toc-item';
+                    li.textContent = ch.title;
+                    li.title = ch.title;
+                    li.onclick = () => {
+                        currentIndex = ch.index % 2 === 0 ? ch.index : ch.index - 1;
+                        renderStaticPages();
+                        tocPanel.classList.remove('active');
+                        stopTTS();
+                    };
+                    tocList.appendChild(li);
+                });
+            }
+        }
+
+        function saveProgress() {
+            if(!currentUser || !currentBookTitle) return;
+            localStorage.setItem(`virtushelf_progress_${currentUser.username}_${currentBookTitle}`, currentIndex);
+        }
+
+        function renderStaticPages() {
+            leftPageText.innerHTML = pages[currentIndex] || '';
+            rightPageText.innerHTML = pages[currentIndex + 1] || '';
+            
+            document.getElementById('current-page-display').textContent = Math.floor(currentIndex / 2) + 1;
+            pageTotal.textContent = `of ${Math.ceil(pages.length / 2)}`;
+            
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex + 2 >= pages.length;
+            
+            leftPageText.scrollTop = 0;
+            rightPageText.scrollTop = 0;
+            
+            saveProgress();
+        }
+
+        pageInput.addEventListener('change', (e) => {
+            let targetPage = parseInt(e.target.value);
+            const maxPage = Math.ceil(pages.length / 2);
+            
+            if (isNaN(targetPage) || targetPage < 1) return;
+            if (targetPage > maxPage) targetPage = maxPage;
+            
+            currentIndex = (targetPage - 1) * 2;
+            stopTTS();
+            renderStaticPages();
+            
+            e.target.value = ''; 
+            e.target.blur(); 
+        });
+
+        document.getElementById('go-to-page-btn').addEventListener('click', () => {
+            pageInput.dispatchEvent(new Event('change'));
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (isAnimating || currentIndex + 2 >= pages.length) return;
+            isAnimating = true;
+            stopTTS();
+            const step = 2;
+            const flipOverlay = document.createElement('div');
+            flipOverlay.className = 'flip-overlay flip-next';
+            flipOverlay.innerHTML = `<div class="flip-front"><div class="reader-text" style="font-size:${zoomSlider.value}rem">${pages[currentIndex + 1] || ''}</div></div><div class="flip-back"><div class="reader-text" style="font-size:${zoomSlider.value}rem">${pages[currentIndex + 2] || ''}</div></div>`;
+            bookSpread.appendChild(flipOverlay);
+            rightPageText.innerHTML = pages[currentIndex + 3] || '';
+            requestAnimationFrame(() => requestAnimationFrame(() => flipOverlay.classList.add('active')));
+            setTimeout(() => { currentIndex += step; renderStaticPages(); flipOverlay.remove(); isAnimating = false; }, 800);
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (isAnimating || currentIndex <= 0) return;
+            isAnimating = true;
+            stopTTS();
+            const step = 2;
+            const flipOverlay = document.createElement('div');
+            flipOverlay.className = 'flip-overlay flip-prev';
+            flipOverlay.innerHTML = `<div class="flip-front"><div class="reader-text" style="font-size:${zoomSlider.value}rem">${pages[currentIndex] || ''}</div></div><div class="flip-back"><div class="reader-text" style="font-size:${zoomSlider.value}rem">${pages[currentIndex - 1] || ''}</div></div>`;
+            bookSpread.appendChild(flipOverlay);
+            leftPageText.innerHTML = pages[currentIndex - 2] || '';
+            requestAnimationFrame(() => requestAnimationFrame(() => flipOverlay.classList.add('active')));
+            setTimeout(() => { currentIndex -= step; renderStaticPages(); flipOverlay.remove(); isAnimating = false; }, 800); 
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const readerModal = document.getElementById('reader-modal');
+                if (readerModal.classList.contains('active')) {
+                    readerModal.classList.remove('active');
+                    stopTTS();
+                }
+                if (document.getElementById('book-info-modal').classList.contains('active')) document.getElementById('book-info-modal').classList.remove('active');
+                if (document.getElementById('cart-modal').classList.contains('active')) document.getElementById('cart-modal').classList.remove('active');
+                if (document.getElementById('auth-modal').classList.contains('active')) document.getElementById('auth-modal').classList.remove('active');
+                if (document.getElementById('profile-modal').classList.contains('active')) document.getElementById('profile-modal').classList.remove('active');
+                if (document.getElementById('checkout-modal') && document.getElementById('checkout-modal').classList.contains('active')) document.getElementById('checkout-modal').classList.remove('active');
+                if (document.getElementById('payment-modal').classList.contains('active')) document.getElementById('payment-modal').classList.remove('active');
+                if (document.getElementById('settings-modal').classList.contains('active')) document.getElementById('settings-modal').classList.remove('active');
+                if (document.getElementById('success-modal').classList.contains('active')) document.getElementById('success-modal').classList.remove('active');
+                return; 
+            }
+            if (document.getElementById('reader-modal').classList.contains('active')) {
+                const isInputFocused = document.activeElement === pageInput;
+                if (e.key === 'ArrowRight' && !isInputFocused) { if (!nextBtn.disabled) nextBtn.click(); } 
+                else if (e.key === 'ArrowLeft' && !isInputFocused) { if (!prevBtn.disabled) prevBtn.click(); }
+            }
+        });
+
+        fetchBooks();
+        updateUserUI();
+    </script>
+</body>
+</html>
