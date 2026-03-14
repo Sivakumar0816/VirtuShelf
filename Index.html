@@ -506,7 +506,6 @@
         .heart-btn:hover { transform: scale(1.1) translateZ(0); color: var(--neon-pink); border-color: var(--neon-pink); background: var(--bg-surface-hover); }
         .wishlist-icon-btn:hover { transform: scale(1.1) translateZ(0); color: var(--neon-purple); border-color: var(--neon-purple); background: var(--bg-surface-hover); }
         
-        /* FIXED: Added specific fill styling for Wishlist Icon interaction */
         .heart-icon, .wishlist-icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; transition: fill 0.3s ease, stroke 0.3s ease; }
         
         .heart-btn.active { color: var(--neon-pink); border-color: var(--neon-pink); background: var(--bg-surface-hover); }
@@ -721,7 +720,7 @@
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; border: 1px solid rgba(0,0,0,0.1);}
         body.dark-theme .slider { background-color: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2);}
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 3px; background-color: #ffffff; transition: transform .4s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3);}
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 3px; background: white; transition: transform .4s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3);}
         input:checked + .slider { background: var(--accent-gradient); border-color: transparent; }
         input:checked + .slider:before { transform: translateX(22px); }
 
@@ -1032,54 +1031,93 @@
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
+        /* FIXED: COMPLETELY OVERHAULED MOBILE RESPONSIVENESS */
         @media (max-width: 768px) {
-            header { padding: 0.8rem 1.2rem; }
-            .brand-container h1 { font-size: 1.3rem; }
-            .header-controls { gap: 10px; }
-            .icon-btn { width: 36px; height: 36px; }
+            /* General layout */
+            header { padding: 0.8rem 1rem; }
+            .brand-container h1 { font-size: 1.2rem; }
+            .header-controls { gap: 8px; }
+            .icon-btn { width: 32px; height: 32px; }
+            .icon-btn svg { width: 16px; height: 16px; }
             
-            .library-layout { flex-direction: column; padding: 1rem; gap: 1rem; }
-            
+            /* Layout & Sidebar */
+            .library-layout { flex-direction: column; padding: 0.8rem; gap: 0.8rem; }
             .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 0.6rem; border-radius: 12px; }
             .sidebar-title, .sidebar-divider { display: none; }
             .category-btn { flex: 0 0 auto; margin-right: 0.6rem; padding: 0.6rem 1rem; font-size: 0.85rem; border-radius: 6px; margin-bottom: 0;}
             .category-btn.active::before { display: none; }
             .category-btn.active::after { content:''; position:absolute; bottom: 0; left: 15%; width: 70%; height: 3px; background:var(--accent-gradient); border-radius: 3px 3px 0 0; box-shadow: 0 -2px 5px var(--neon-purple);}
             
-            .section-header { padding: 2rem 1.2rem; border-radius: 16px;}
-            .section-title { font-size: 2rem; }
+            /* Hero & Search */
+            .section-header { padding: 1.5rem 1rem; border-radius: 16px;}
+            .section-title { font-size: 1.8rem; }
             .section-subtitle { font-size: 0.9rem; }
-            
-            #search-input { padding-right: 55px; }
+            #search-input { padding: 1rem 40px 1rem 2.5rem; font-size: 0.95rem; }
+            .search-icon { left: 1rem; width: 16px; height: 16px; }
 
-            .bookshelf { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.2rem; }
+            /* Bookshelf & Cards */
+            .bookshelf { grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 1rem; }
             .book-info { padding: 0.8rem; }
+            .book-title { font-size: 0.85rem; }
+            .book-author { font-size: 0.7rem; }
+            .read-btn { padding: 0.5rem; font-size: 0.75rem; }
             
-            .info-container { padding: 1.8rem; width: 95%; max-width: 360px; border-radius: 24px;}
-            .profile-stats-grid { grid-template-columns: 1fr; gap: 0.8rem; }
-            .qr-container img { width: 150px; height: 150px; }
+            /* Badges & Icons (Fixing Overlaps) */
+            .badge { font-size: 0.55rem; padding: 3px 6px; max-width: calc(100% - 40px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .heart-btn { width: 28px; height: 28px; top: 6px; right: 6px; }
+            .wishlist-icon-btn { width: 28px; height: 28px; top: 40px; right: 6px; }
 
+            /* Modals Globally */
+            .modal-overlay { padding: 1rem; box-sizing: border-box; }
+            .info-container { padding: 1.5rem; width: 100%; max-width: 100%; border-radius: 16px; box-sizing: border-box; }
+            .close-modal-btn { top: 10px; right: 10px; width: 28px; height: 28px; }
+            
+            /* Specific Modals */
+            .profile-stats-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+            .qr-container img { width: 130px; height: 130px; }
+            .payment-tabs { gap: 0.3rem; }
+            .payment-tab-btn { padding: 0.6rem; font-size: 0.8rem; }
+            .card-row { flex-direction: column; gap: 0; }
+
+            /* Book Detail Modal */
             .book-detail-content { flex-direction: column; }
-            .book-detail-left { height: 280px; }
-            .book-detail-right { padding: 2rem 1.5rem; text-align: center; }
-            .book-detail-badge { align-self: center !important; margin-bottom: 1rem !important; }
-            .detail-divider { margin: 1.2rem auto; }
+            .book-detail-left { height: 240px; width: 100%; }
+            .book-detail-right { padding: 1.5rem 1rem; text-align: center; }
+            .book-detail-badge { align-self: center !important; margin: 0 auto 0.8rem auto !important; position: static !important; }
+            .detail-divider { margin: 1rem auto; }
+            #detail-title { font-size: 1.4rem !important; }
+            #detail-actions { flex-direction: column !important; gap: 10px !important; }
+            #detail-actions button { width: 100% !important; padding: 1rem !important; font-size: 1rem !important; margin-bottom: 0 !important; }
+            #detail-heart-btn { top: 10px !important; left: 10px !important; right: auto !important; }
+            #detail-wishlist-btn { top: 10px !important; left: 45px !important; right: auto !important; }
             
-            .reader-container { width: 100%; height: 100vh; border-radius: 0; transform: scale(0.95) translateY(20px); }
+            /* Reader Modal */
+            .reader-container { width: 100%; height: calc(100vh - 2rem); border-radius: 16px; transform: scale(0.95) translateY(20px); }
             .modal-overlay.active .reader-container { transform: scale(1) translateY(0); }
-            .reader-header { padding: 0.8rem 1.2rem; flex-wrap: wrap; }
-            .zoom-container { order: 3; width: 100%; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--glass-border); }
-            .page, .flip-front, .flip-back { padding: 1.5rem 1.2rem; }
-            .reader-text { font-size: 0.9rem; }
-            .title-page-text { margin-top: 20%; }
-            .title-page-text h2 { font-size: 1.6rem; }
-            .title-page-text h4 { font-size: 0.95rem; }
-            .reader-footer { padding: 0.8rem 1.2rem; flex-wrap: wrap; }
-            .page-center { width: 100%; order: -1; justify-content: center; margin-bottom: 15px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; flex-direction: column; gap:10px;}
-            .jump-container { margin-left: 0 !important; padding-left: 0 !important; border-left: none !important;}
             
-            .reader-sidebar { left: -100%; width: 80%; }
-            .reader-settings-dropdown { right: 10px; left: 10px; width: auto;}
+            /* Reader Header Re-flow */
+            .reader-header { padding: 0.8rem; flex-direction: column; gap: 12px; align-items: stretch !important; border-bottom: 1px solid rgba(255,255,255,0.1); }
+            .reader-header > div:nth-child(1) { width: 100%; justify-content: space-between !important; }
+            .reader-header > div:nth-child(2) { width: 100%; justify-content: center !important; margin: 5px 0; }
+            .reader-header > div:nth-child(3) { width: 100%; justify-content: space-evenly !important; }
+            #close-reader { position: static !important; box-shadow: none !important; }
+            
+            /* Reader Pages (Stack Vertically) */
+            .book-spread { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+            .book-spine { display: none; }
+            .page { width: 100%; height: auto; min-height: 50%; padding: 1.5rem 1rem; border-radius: 0 !important; box-shadow: none !important; border-right: none !important; border-bottom: 1px dashed var(--border-light); }
+            .reader-text { font-size: 0.95rem; overflow-y: visible; height: auto; }
+            
+            .title-page-text { margin-top: 10%; }
+            .title-page-text h2 { font-size: 1.5rem; }
+            .title-page-text h4 { font-size: 0.9rem; }
+            
+            .reader-footer { padding: 0.8rem; flex-direction: column; gap: 10px; }
+            .page-center { width: 100%; justify-content: space-between !important; order: -1; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 5px; flex-direction: row !important; }
+            .jump-container { margin-left: auto !important; padding-left: 0 !important; border-left: none !important; }
+            
+            .reader-sidebar { left: -100%; width: 85%; }
+            .reader-settings-dropdown { right: 5%; left: 5%; width: 90%; }
         }
     </style>
 </head>
@@ -1293,12 +1331,12 @@
             
             <div class="book-detail-content">
                 <div class="book-detail-left">
-                    <button id="detail-heart-btn" class="heart-btn" title="Add to Favorites" style="top: 15px; left: 15px; right: auto; width: 44px; height: 44px;">
+                    <button id="detail-heart-btn" class="heart-btn" title="Add to Favorites">
                         <svg class="heart-icon" viewBox="0 0 24 24">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
                     </button>
-                    <button id="detail-wishlist-btn" class="wishlist-icon-btn" title="Add to Wishlist" style="top: 15px; left: 68px; right: auto; width: 44px; height: 44px; position: absolute;">
+                    <button id="detail-wishlist-btn" class="wishlist-icon-btn" title="Add to Wishlist">
                         <svg class="wishlist-icon"><use href="#icon-bookmark"></use></svg>
                     </button>
                     <img id="detail-cover" src="" alt="Book Cover">
@@ -1747,7 +1785,6 @@
                     }
                 });
 
-                // FIXED: Placed Coming Soon / Sold Out books at the very front of the list
                 const specialBooks = [
                     {
                         title: "The Winds of Winter",
@@ -1825,7 +1862,6 @@
             } catch (err) { console.error("Failed to sync favorites with server."); }
         };
 
-        // NEW: Wishlist Toggle function
         window.toggleWishlist = async (event, title) => {
             event.stopPropagation(); 
             if (!currentUser) { authModal.classList.add('active'); return; }
@@ -2472,6 +2508,10 @@
             tocPanel.classList.remove('active');
             settingsPanel.classList.remove('active');
             
+            if(!readerContainer.classList.contains('theme-sepia') && !readerContainer.classList.contains('theme-dark')) {
+                readerContainer.classList.add('theme-light');
+            }
+
             stopTTS();
             
             await new Promise(resolve => setTimeout(resolve, 50));
@@ -2505,7 +2545,7 @@
             } catch (err) { 
                 console.error("Book load error:", err);
                 
-                // FIXED: Fallback Preview System if Node backend is offline or rate-limited
+                // Fallback Preview System if Node backend is offline or rate-limited
                 showToast("Server unavailable: Loading sample preview.");
                 const fallbackText = "CHAPTER I. PREVIEW MODE\n\nWe could not fetch the full book content from the server. This often happens if the external library is rate-limiting your connection or the server is offline.\n\n" + "Here is some sample text to demonstrate the Liquid Glass reader functionality. ".repeat(150);
                 paginateAndParseChapters(fallbackText);
@@ -2608,9 +2648,17 @@
 
         nextBtn.addEventListener('click', () => {
             if (isAnimating || currentIndex + 2 >= pages.length) return;
-            isAnimating = true;
             stopTTS();
             const step = 2;
+            
+            // FIXED: Instantly snap pages on small screens without flipping to prevent vertical UI breaking
+            if (window.innerWidth <= 768) {
+                currentIndex += step;
+                renderStaticPages();
+                return;
+            }
+            
+            isAnimating = true;
             const flipOverlay = document.createElement('div');
             flipOverlay.className = 'flip-overlay flip-next';
             flipOverlay.innerHTML = `<div class="flip-front"><div class="reader-text" style="font-size:${zoomSlider.value}rem">${pages[currentIndex + 1] || ''}</div></div><div class="flip-back"><div class="reader-text" style="font-size:${zoomSlider.value}rem">${pages[currentIndex + 2] || ''}</div></div>`;
@@ -2622,9 +2670,17 @@
 
         prevBtn.addEventListener('click', () => {
             if (isAnimating || currentIndex <= 0) return;
-            isAnimating = true;
             stopTTS();
             const step = 2;
+            
+            // FIXED: Instantly snap pages on small screens without flipping to prevent vertical UI breaking
+            if (window.innerWidth <= 768) {
+                currentIndex -= step;
+                renderStaticPages();
+                return;
+            }
+            
+            isAnimating = true;
             const flipOverlay = document.createElement('div');
             flipOverlay.className = 'flip-overlay flip-prev';
             flipOverlay.innerHTML = `<div class="flip-front"><div class="reader-text" style="font-size:${zoomSlider.value}rem">${pages[currentIndex] || ''}</div></div><div class="flip-back"><div class="reader-text" style="font-size:${zoomSlider.value}rem">${pages[currentIndex - 1] || ''}</div></div>`;
