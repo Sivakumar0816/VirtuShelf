@@ -1,16 +1,15 @@
 const express = require('express');
 const cors = require('cors'); 
-const path = require('path'); // NEW: Helps find your HTML file
+const path = require('path'); // LINE 1: Helps the server find your HTML file
 
 const app = express();
-// NEW: Allows the cloud server to assign a port, or uses 3000 on your computer
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; // LINE 2: Lets Render choose the network port
 
 app.use(cors());
 app.use(express.json()); 
 
-// NEW: Tells the server to host your images (qrcode.jpg) and HTML files
-app.use(express.static(__dirname));
+// LINE 3: Tells the server to host your Index.html and qrcode.jpg on the internet
+app.use(express.static(__dirname)); 
 
 // MASSIVE 60-BOOK DATABASE
 const libraryDatabase = [
@@ -88,18 +87,19 @@ const libraryDatabase = [
 ];
 
 const users = [];
-
-// --- CACHING FOR READ SPEED ---
 const bookCache = {};
+
+// When someone goes to your Render URL, show them the HTML page
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'Index.html'));
+});
 
 app.get('/api/read', async (req, res) => {
     const targetUrl = req.query.url;
     if (!targetUrl) return res.status(400).json({ error: "Missing book URL" });
 
-    // Tell browser to cache this for 1 day
     res.set('Cache-Control', 'public, max-age=86400');
 
-    // Return from Server RAM if we've already fetched it before
     if (bookCache[targetUrl]) {
         console.log(`[FAST] Served ${targetUrl} from Server RAM Cache`);
         return res.send(bookCache[targetUrl]);
@@ -107,8 +107,6 @@ app.get('/api/read', async (req, res) => {
 
     try {
         console.log(`[NETWORK] Fetching ${targetUrl} from Gutenberg...`);
-        
-        // Timeout to prevent hanging
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 12000); 
 
@@ -118,10 +116,7 @@ app.get('/api/read', async (req, res) => {
         if (!response.ok) throw new Error("Failed to fetch from Gutenberg");
         
         const text = await response.text();
-        
-        // Save to Server RAM for the next person
         bookCache[targetUrl] = text;
-        
         res.send(text);
     } catch (err) {
         console.error("Error fetching book:", err.message);
@@ -133,11 +128,6 @@ app.get('/api/books', (req, res) => {
     res.json(libraryDatabase);
 });
 
-// NEW: Show the UI when someone visits the main link
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Index.html'));
-});
-
 app.post('/api/register', (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ error: "Username and password are required." });
@@ -146,7 +136,7 @@ app.post('/api/register', (req, res) => {
         return res.status(400).json({ error: "Username already exists." });
     }
 
-    users.push({ username, password, library: [], favorites: [] });
+    users.push({ username, password, library: [], favorites: [], wishlist: [] });
     res.status(201).json({ message: "Registration successful!" });
 });
 
@@ -155,7 +145,7 @@ app.post('/api/login', (req, res) => {
     const user = users.find(u => u.username === username && u.password === password);
     
     if (user) {
-        res.json({ message: "Login successful!", username: user.username, library: user.library, favorites: user.favorites || [] });
+        res.json({ message: "Login successful!", username: user.username, library: user.library, favorites: user.favorites || [], wishlist: user.wishlist || [] });
     } else {
         res.status(401).json({ error: "Invalid username or password." });
     }
@@ -166,7 +156,7 @@ app.post('/api/checkout', (req, res) => {
     let user = users.find(u => u.username === username);
     
     if (!user) {
-        user = { username: username, password: "auto-restored", library: [], favorites: [] };
+        user = { username: username, password: "auto-restored", library: [], favorites: [], wishlist: [] };
         users.push(user);
     }
 
@@ -190,7 +180,7 @@ app.post('/api/favorite', (req, res) => {
     let user = users.find(u => u.username === username);
     
     if (!user) {
-        user = { username: username, password: "auto-restored", library: [], favorites: [] };
+        user = { username: username, password: "auto-restored", library: [], favorites: [], wishlist: [] };
         users.push(user);
     }
     
@@ -206,6 +196,27 @@ app.post('/api/favorite', (req, res) => {
     res.json({ message: "Favorites updated", favorites: user.favorites });
 });
 
+app.post('/api/wishlist', (req, res) => {
+    const { username, title } = req.body; 
+    let user = users.find(u => u.username === username);
+    
+    if (!user) {
+        user = { username: username, password: "auto-restored", library: [], favorites: [], wishlist: [] };
+        users.push(user);
+    }
+    
+    if (!user.wishlist) user.wishlist = [];
+    
+    const index = user.wishlist.findIndex(w => w.title === title || w === title);
+    if (index === -1) {
+        user.wishlist.push({title, category: 'General'});
+    } else {
+        user.wishlist.splice(index, 1);
+    }
+    
+    res.json({ message: "Wishlist updated", wishlist: user.wishlist });
+});
+
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
